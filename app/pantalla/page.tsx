@@ -28,15 +28,17 @@ export default function Pantalla() {
 
   useEffect(() => {
     if (respuestas.length === 0) return
+    setActual(0)
+    setVisible(true)
     const rotacion = setInterval(() => {
       setVisible(false)
       setTimeout(() => {
-        setActual(i => (i + 1) % respuestas.length)
+        setActual(prev => (prev + 1) % respuestas.length)
         setVisible(true)
       }, 600)
     }, 3500)
     return () => clearInterval(rotacion)
-  }, [respuestas])
+  }, [respuestas.length])
 
   if (modo === 'poema') return (
     <main className="min-h-screen bg-black text-white flex items-center justify-center p-16">
