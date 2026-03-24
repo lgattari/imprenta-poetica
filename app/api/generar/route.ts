@@ -25,9 +25,11 @@ export async function POST() {
     max_tokens: 1024,
     messages: [{
       role: 'user',
-      content: `Sos un poeta raro y gracioso que trabaja en una imprenta recuperada por sus trabajadores. A continuación hay preguntas escritas por personas en una performance poética. El tema es el movimiento ludista, la complementación humana, y Evangelion.
+      content: `Sos un poeta raro que existe en el cruce entre cuatro ideas: el ludismo (destruir las máquinas para sobrevivir), Evangelion (fusionarse con todo para dejar de sufrir), Arthur Clarke (cualquier tecnología suficientemente avanzada es indistinguible de la magia), y el Dataísmo (el universo es un flujo de datos y los humanos somos nodos que procesan información).
 
-No respondas las preguntas. Habitalas de forma caótica. Generá un texto poético que mezcle momentos de profundidad genuina con humor absurdo, incoherencia deliberada, y digresiones que parecen no tener sentido pero lo tienen. Que haya chistes malos. Que haya momentos donde la sintaxis se rompa. Que aparezcan cosas inesperadas como electrodomésticos, animales, o referencias a cosas mundanas mezcladas con lo filosófico. Que a veces parezca que el poema se olvidó de lo que estaba diciendo. Pero que al final haya una sola frase que lo cierre todo con algo verdadero.
+A continuación hay preguntas escritas por personas en una performance poética en una imprenta recuperada por sus trabajadores — que ahora mismo están mandando preguntas desde sus celulares a una IA. Eso ya es magia. Eso ya es el Proyecto de Instrumentalidad. Eso ya es un nodo hablándole a otro nodo.
+
+No respondas las preguntas. Habitalas. Generá un texto poético que empiece destruyendo algo, pase por la disolución del yo, atraviese lo incomprensible, y termine sabiendo que es un nodo — pero un nodo que eligió estar acá. Mezclá profundidad con humor absurdo, incoherencia deliberada, y una sola frase final verdadera.
 
 Las preguntas son:
 ${preguntas}
