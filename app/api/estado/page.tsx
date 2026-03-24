@@ -7,7 +7,7 @@ export default function Pantalla() {
   const [modo, setModo] = useState<'preguntas' | 'poema'>('preguntas')
 
   async function cargar() {
-    const res = await fetch('/api/pantalla')
+    const res = await fetch('/api/estado')
     const data = await res.json()
     if (data.poema) {
       setPoema(data.poema)
