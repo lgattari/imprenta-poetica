@@ -12,7 +12,7 @@ export default function Home() {
     await fetch('/api/respuesta', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ texto }),
+      body: JSON.stringify({ texto }),  
     })
     setEnviado(true)
     setCargando(false)
