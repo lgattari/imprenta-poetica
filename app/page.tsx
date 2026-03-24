@@ -1,48 +1,48 @@
 'use client'
 import { useState } from 'react'
 
-export default function Admin() {
-  const [poema, setPoema] = useState('')
+export default function Home() {
+  const [texto, setTexto] = useState('')
+  const [enviado, setEnviado] = useState(false)
   const [cargando, setCargando] = useState(false)
-  const [cantidad, setCantidad] = useState<number|null>(null)
 
-  async function cargarCantidad() {
-    const res = await fetch('/api/cantidad')
-    const data = await res.json()
-    setCantidad(data.cantidad)
-  }
-
-  async function generar() {
+  async function enviar() {
+    if (!texto.trim()) return
     setCargando(true)
-    const res = await fetch('/api/generar', { method: 'POST' })
-    const data = await res.json()
-    setPoema(data.poema)
+    await fetch('/api/respuesta', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texto }),
+    })
+    setEnviado(true)
     setCargando(false)
   }
 
+  if (enviado) return (
+    <main className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-8">
+      <p className="text-2xl text-center font-light">tu pregunta ya es parte de todo</p>
+    </main>
+  )
+
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-8 gap-8">
+      <h1 className="text-3xl text-center font-light max-w-md leading-relaxed">
+        ¿Qué no podrías ser sin el otro?
+      </h1>
+      <textarea
+        className="w-full max-w-md bg-transparent border border-white/30 rounded-lg p-4 text-white placeholder-white/30 resize-none focus:outline-none focus:border-white/60"
+        rows={4}
+        placeholder="escribí tu pregunta..."
+        value={texto}
+        onChange={e => setTexto(e.target.value)}
+      />
       <button
-        onClick={cargarCantidad}
-        className="px-6 py-2 border border-white/30 rounded-full text-sm"
+        onClick={enviar}
+        disabled={cargando || !texto.trim()}
+        className="px-8 py-3 border border-white/50 rounded-full text-white/80 hover:text-white hover:border-white transition-all disabled:opacity-30"
       >
-        ver cuántas respuestas hay
+        {cargando ? 'enviando...' : 'enviar'}
       </button>
-      {cantidad !== null && (
-        <p className="text-white/60">{cantidad} respuestas recibidas</p>
-      )}
-      <button
-        onClick={generar}
-        disabled={cargando}
-        className="px-10 py-4 border border-white rounded-full text-xl hover:bg-white hover:text-black transition-all disabled:opacity-30"
-      >
-        {cargando ? 'generando...' : 'generar poema colectivo'}
-      </button>
-      {poema && (
-        <div className="max-w-2xl text-center text-xl font-light leading-relaxed whitespace-pre-wrap mt-8">
-          {poema}
-        </div>
-      )}
     </main>
   )
 }
