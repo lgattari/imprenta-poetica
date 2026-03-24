@@ -20,6 +20,13 @@ export default function Admin() {
     setCargando(false)
   }
 
+  async function nuevaSesion() {
+    await fetch('/api/nueva-sesion', { method: 'POST' })
+    setPoema('')
+    setCantidad(null)
+    alert('nueva sesión iniciada')
+  }
+
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-8 gap-8">
       <button
@@ -43,6 +50,12 @@ export default function Admin() {
           {poema}
         </div>
       )}
+      <button
+        onClick={nuevaSesion}
+        className="px-6 py-2 border border-white/20 rounded-full text-sm text-white/40 hover:text-white/60 mt-8"
+      >
+        nueva sesión
+      </button>
     </main>
   )
 }
