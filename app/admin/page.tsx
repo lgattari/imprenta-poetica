@@ -20,6 +20,10 @@ export default function Admin() {
     setCargando(false)
   }
 
+  async function iniciarDisolucion() {
+    await fetch('/api/disolucion', { method: 'POST' })
+  }
+
   async function nuevaSesion() {
     await fetch('/api/nueva-sesion', { method: 'POST' })
     setPoema('')
@@ -44,6 +48,12 @@ export default function Admin() {
         className="px-10 py-4 border border-white rounded-full text-xl hover:bg-white hover:text-black transition-all disabled:opacity-30"
       >
         {cargando ? 'generando...' : 'generar poema colectivo'}
+      </button>
+      <button
+        onClick={iniciarDisolucion}
+        className="px-10 py-4 border border-orange-500 rounded-full text-orange-400 text-xl hover:bg-orange-500 hover:text-black transition-all"
+      >
+        iniciar disolución
       </button>
       {poema && (
         <div className="max-w-2xl text-center text-xl font-light leading-relaxed whitespace-pre-wrap mt-8">
