@@ -80,11 +80,9 @@ export default function Pantalla() {
       setUltimaRespuesta(data.ultimaRespuesta.respuesta)
       setHablando(true)
       setTimeout(() => setHablando(false), 4000)
-      
-      if (data.ultimaRespuesta.audio_base64) {
-        const audio = new Audio(`data:audio/mpeg;base64,${data.ultimaRespuesta.audio_base64}`)
-        audio.play()
-      }
+
+      const audio = new Audio(`/api/audio?t=${Date.now()}`)
+      audio.play().catch(console.error)
     }
   }
 
