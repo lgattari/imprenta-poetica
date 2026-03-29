@@ -49,6 +49,24 @@ export default function Pantalla() {
   const animRef = useRef<number>(0)
   const prevEstado = useRef<string>('')
   const prevRespuesta = useRef<string>('')
+  const [audioActivo, setAudioActivo] = useState(false)
+
+  async function activarAudio() {
+    const ctx = new AudioContext()
+    await ctx.resume()
+    setAudioActivo(true)
+  }
+
+  if (!audioActivo) return (
+    <main className="min-h-screen bg-black flex items-center justify-center">
+      <button
+        onClick={activarAudio}
+        className="px-8 py-4 border border-white/20 rounded-full text-white/40 hover:text-white hover:border-white transition-all"
+      >
+        iniciar
+      </button>
+    </main>
+  )
 
   async function cargar() {
     const res = await fetch('/api/estado')
