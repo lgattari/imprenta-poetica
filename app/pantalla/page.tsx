@@ -1,8 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 
-function golpeIndustrial() {
-  const ctx = new AudioContext()
+function golpeIndustrial(ctx: AudioContext) {
   const buf = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate)
   const data = buf.getChannelData(0)
   for (let i = 0; i < data.length; i++) {
@@ -35,6 +34,7 @@ interface Flotante {
 }
 
 export default function Pantalla() {
+  const [audioActivo, setAudioActivo] = useState(false)
   const [caracteristicas, setCaracteristicas] = useState<string[]>([])
   const [modo, setModo] = useState<Modo>('caracteristicas')
   const [actual, setActual] = useState(0)
@@ -49,24 +49,14 @@ export default function Pantalla() {
   const animRef = useRef<number>(0)
   const prevEstado = useRef<string>('')
   const prevRespuesta = useRef<string>('')
-  const [audioActivo, setAudioActivo] = useState(false)
+  const audioCtxRef = useRef<AudioContext | null>(null)
 
   async function activarAudio() {
     const ctx = new AudioContext()
     await ctx.resume()
+    audioCtxRef.current = ctx
     setAudioActivo(true)
   }
-
-  if (!audioActivo) return (
-    <main className="min-h-screen bg-black flex items-center justify-center">
-      <button
-        onClick={activarAudio}
-        className="px-8 py-4 border border-white/20 rounded-full text-white/40 hover:text-white hover:border-white transition-all"
-      >
-        iniciar
-      </button>
-    </main>
-  )
 
   async function cargar() {
     const res = await fetch('/api/estado')
@@ -95,10 +85,11 @@ export default function Pantalla() {
   }
 
   useEffect(() => {
+    if (!audioActivo) return
     cargar()
     const interval = setInterval(cargar, 3000)
     return () => clearInterval(interval)
-  }, [])
+  }, [audioActivo])
 
   useEffect(() => {
     if (caracteristicas.length === 0) return
@@ -116,7 +107,7 @@ export default function Pantalla() {
 
   useEffect(() => {
     if (modo !== 'contador') return
-    golpeIndustrial()
+    if (audioCtxRef.current) golpeIndustrial(audioCtxRef.current)
     const interval = setInterval(() => {
       setCuenta(prev => {
         if (prev <= 1) {
@@ -136,7 +127,7 @@ export default function Pantalla() {
           setFase(0)
           return 0
         }
-        golpeIndustrial()
+        if (audioCtxRef.current) golpeIndustrial(audioCtxRef.current)
         return prev - 1
       })
     }, 1000)
@@ -188,7 +179,6 @@ export default function Pantalla() {
       const cy = H / 2 - 40
       const r = Math.min(W, H) * 0.28
 
-      // cara base con ruido
       for (let a = 0; a < Math.PI * 2; a += 0.01) {
         const n = noise(Math.cos(a) * 3, Math.sin(a) * 3, t * 0.02)
         const rr = r * (0.85 + n * 0.2)
@@ -199,7 +189,6 @@ export default function Pantalla() {
         ctx!.fillRect(x, y, 2, 2)
       }
 
-      // interferencia de fondo
       for (let i = 0; i < 80; i++) {
         const x = cx + (Math.random() - 0.5) * r * 2.2
         const y = cy + (Math.random() - 0.5) * r * 2.5
@@ -210,7 +199,6 @@ export default function Pantalla() {
         }
       }
 
-      // ojos
       const eyeY = cy - r * 0.15
       const eyeOff = r * 0.28
       const eyeR = r * 0.1 + Math.sin(t * 0.05) * r * 0.02
@@ -222,19 +210,16 @@ export default function Pantalla() {
         ctx!.arc(ex, eyeY, eyeR, 0, Math.PI * 2)
         ctx!.fillStyle = `rgba(255,255,255,${eyePulse})`
         ctx!.fill()
-
         ctx!.beginPath()
         ctx!.arc(ex + side * eyeR * 0.15, eyeY, eyeR * 0.45, 0, Math.PI * 2)
         ctx!.fillStyle = `rgba(0,0,0,0.9)`
         ctx!.fill()
-
         ctx!.beginPath()
         ctx!.arc(ex + side * eyeR * 0.05, eyeY - eyeR * 0.1, eyeR * 0.12, 0, Math.PI * 2)
         ctx!.fillStyle = `rgba(255,255,255,0.8)`
         ctx!.fill()
       })
 
-      // boca
       const mouthY = cy + r * 0.35
       const mouthW = r * 0.45
       const mouthOpen = hablando
@@ -249,7 +234,6 @@ export default function Pantalla() {
       ctx!.lineWidth = 1.5
       ctx!.stroke()
 
-      // nariz sutil
       ctx!.beginPath()
       ctx!.moveTo(cx - r * 0.06, cy + r * 0.1)
       ctx!.lineTo(cx, cy + r * 0.22)
@@ -258,13 +242,11 @@ export default function Pantalla() {
       ctx!.lineWidth = 1
       ctx!.stroke()
 
-      // scan lines
       for (let y = 0; y < H; y += 4) {
         ctx!.fillStyle = `rgba(0,0,0,0.15)`
         ctx!.fillRect(0, y, W, 1)
       }
 
-      // glitch lines ocasionales
       if (Math.random() < 0.04) {
         const gy = Math.random() * H
         const gw = Math.random() * W * 0.4
@@ -292,14 +274,18 @@ export default function Pantalla() {
     @keyframes fadein { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
   `
 
+  if (!audioActivo) return (
+    <main className="min-h-screen bg-black flex items-center justify-center">
+      <button onClick={activarAudio}
+        className="px-8 py-4 border border-white/20 rounded-full text-white/40 hover:text-white hover:border-white transition-all">
+        iniciar
+      </button>
+    </main>
+  )
+
   if (modo === 'dios') return (
     <main className="min-h-screen bg-black flex flex-col items-center justify-center p-8 gap-6">
-      <canvas
-        ref={canvasRef}
-        width={500}
-        height={500}
-        style={{ maxWidth: '60vh', maxHeight: '60vh' }}
-      />
+      <canvas ref={canvasRef} width={500} height={500} style={{ maxWidth: '60vh', maxHeight: '60vh' }} />
       {ultimaRespuesta && (
         <div className="max-w-2xl text-center" style={{ animation: 'fadein 0.8s ease-out' }}>
           <p className="text-white/30 text-sm mb-2">{ultimaPregunta}</p>
@@ -311,7 +297,7 @@ export default function Pantalla() {
   )
 
   if (modo === 'contador') return (
-    <main className="min-h-screen bg-black flex items-center justify-center" onClick={() => new AudioContext().resume()}>
+    <main className="min-h-screen bg-black flex items-center justify-center">
       <p className="text-white font-light" style={{ fontSize: '40vw', opacity: 0.15, animation: 'pulso 0.3s ease-out', lineHeight: 1 }}>
         {cuenta}
       </p>
@@ -344,7 +330,7 @@ export default function Pantalla() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-16 overflow-hidden" onClick={() => new AudioContext().resume()}>
+    <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-16 overflow-hidden">
       <p className="text-white/20 text-xs tracking-widest uppercase mb-16">
         {caracteristicas.length} {caracteristicas.length === 1 ? 'característica' : 'características'} recibidas
       </p>
