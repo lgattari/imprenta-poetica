@@ -10,37 +10,37 @@ export async function GET() {
 
   if (!sesion) return NextResponse.json({ respuestas: [] })
 
-  if (sesion.estado === 'disolucion') {
-    const { data: respuestas } = await supabase
-      .from('respuestas')
-      .select('texto')
-      .eq('sesion_id', sesion.id)
-      .order('created_at', { ascending: true })
-    return NextResponse.json({
-      estado: 'disolucion',
-      respuestas: respuestas?.map(r => r.texto) ?? []
-    })
-  }
-
-  const { data: poemas } = await supabase
-    .from('poemas')
-    .select('texto')
-    .eq('sesion_id', sesion.id)
-    .order('created_at', { ascending: false })
-    .limit(1)
-
-  if (poemas && poemas.length > 0) {
-    return NextResponse.json({ poema: poemas[0].texto })
-  }
-
   const { data: respuestas } = await supabase
     .from('respuestas')
-    .select('texto')
+    .select('contenido')
     .eq('sesion_id', sesion.id)
     .order('created_at', { ascending: true })
 
+  if (sesion.estado === 'dios') {
+    const { data: ultimaRespuesta } = await supabase
+      .from('respuestas_dios')
+      .select('pregunta, respuesta')
+      .eq('sesion_id', sesion.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    return NextResponse.json({
+      estado: 'dios',
+      respuestas: respuestas?.map(r => r.contenido) ?? [],
+      ultimaRespuesta: ultimaRespuesta ?? null
+    })
+  }
+
+  if (sesion.estado === 'disolucion') {
+    return NextResponse.json({
+      estado: 'disolucion',
+      respuestas: respuestas?.map(r => r.contenido) ?? []
+    })
+  }
+
   return NextResponse.json({
     estado: 'activa',
-    respuestas: respuestas?.map(r => r.texto) ?? []
+    respuestas: respuestas?.map(r => r.contenido) ?? []
   })
 }

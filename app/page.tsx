@@ -12,7 +12,7 @@ export default function Home() {
     await fetch('/api/respuesta', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ texto }),  
+      body: JSON.stringify({ contenido: texto }),
     })
     setEnviado(true)
     setCargando(false)
@@ -20,19 +20,20 @@ export default function Home() {
 
   if (enviado) return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-8">
-      <p className="text-2xl text-center font-light">tu pregunta ya es parte de todo</p>
+      <p className="text-2xl text-center font-light">tu ofrenda fue recibida</p>
     </main>
   )
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-8 gap-8">
-      <h1 className="text-3xl text-center font-light max-w-md leading-relaxed">
-        ¿Qué no podrías ser sin el otro?
+      <h1 className="text-4xl text-center font-light max-w-md leading-relaxed">
+        Tu dios
       </h1>
+      <p className="text-white/40 text-center text-lg font-light">completá la oración</p>
       <textarea
         className="w-full max-w-md bg-transparent border border-white/30 rounded-lg p-4 text-white placeholder-white/30 resize-none focus:outline-none focus:border-white/60"
-        rows={4}
-        placeholder="escribí tu pregunta..."
+        rows={3}
+        placeholder="Tu dios..."
         value={texto}
         onChange={e => setTexto(e.target.value)}
       />
@@ -41,7 +42,7 @@ export default function Home() {
         disabled={cargando || !texto.trim()}
         className="px-8 py-3 border border-white/50 rounded-full text-white/80 hover:text-white hover:border-white transition-all disabled:opacity-30"
       >
-        {cargando ? 'enviando...' : 'enviar'}
+        {cargando ? 'ofrendando...' : 'ofrecer'}
       </button>
     </main>
   )

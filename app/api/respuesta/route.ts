@@ -2,8 +2,8 @@ import { supabase } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
 
 export async function POST(req: Request) {
-  const { texto } = await req.json()
-  
+  const { contenido } = await req.json()
+
   const { data: sesion } = await supabase
     .from('sesiones')
     .select('id')
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
   const { error } = await supabase
     .from('respuestas')
-    .insert({ texto, sesion_id: sesion.id })
+    .insert({ contenido, sesion_id: sesion.id })
 
   if (error) return NextResponse.json({ error }, { status: 500 })
   return NextResponse.json({ ok: true })
