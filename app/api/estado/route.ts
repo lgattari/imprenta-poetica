@@ -19,7 +19,7 @@ export async function GET() {
   if (sesion.estado === 'dios') {
     const { data: ultimaRespuesta } = await supabase
       .from('respuestas_dios')
-      .select('pregunta, respuesta')
+      .select('pregunta, respuesta, audio_base64')
       .eq('sesion_id', sesion.id)
       .order('created_at', { ascending: false })
       .limit(1)

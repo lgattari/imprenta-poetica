@@ -30,12 +30,6 @@ Respondé como esta entidad. Podés ser cruel, tierno, caótico, impredecible. H
 
   const respuesta = message.content[0].type === 'text' ? message.content[0].text : ''
 
-  await supabase.from('respuestas_dios').insert({
-    pregunta,
-    respuesta,
-    sesion_id: sesion.id
-  })
-
   const voiceRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${process.env.ELEVENLABS_VOICE_ID}`, {
     method: 'POST',
     headers: {
@@ -51,6 +45,13 @@ Respondé como esta entidad. Podés ser cruel, tierno, caótico, impredecible. H
 
   const audioBuffer = await voiceRes.arrayBuffer()
   const audioBase64 = Buffer.from(audioBuffer).toString('base64')
+
+  await supabase.from('respuestas_dios').insert({
+    pregunta,
+    respuesta,
+    audio_base64: audioBase64,
+    sesion_id: sesion.id
+  })
 
   return NextResponse.json({ respuesta, audio: audioBase64 })
 }

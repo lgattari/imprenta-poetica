@@ -74,13 +74,17 @@ export default function Pantalla() {
       prevEstado.current = 'activa'
       setCaracteristicas(data.respuestas)
     }
-
     if (data.ultimaRespuesta && data.ultimaRespuesta.respuesta !== prevRespuesta.current) {
       prevRespuesta.current = data.ultimaRespuesta.respuesta
       setUltimaPregunta(data.ultimaRespuesta.pregunta)
       setUltimaRespuesta(data.ultimaRespuesta.respuesta)
       setHablando(true)
       setTimeout(() => setHablando(false), 4000)
+      
+      if (data.ultimaRespuesta.audio_base64) {
+        const audio = new Audio(`data:audio/mpeg;base64,${data.ultimaRespuesta.audio_base64}`)
+        audio.play()
+      }
     }
   }
 
