@@ -12,19 +12,33 @@ export async function GET() {
 
   const { data } = await supabase
     .from('respuestas_dios')
-    .select('audio_base64')
+    .select('respuesta')
     .eq('sesion_id', sesion.id)
     .order('created_at', { ascending: false })
     .limit(1)
     .single()
 
-  if (!data?.audio_base64) return new NextResponse(null, { status: 404 })
+  if (!data?.respuesta) return new NextResponse(null, { status: 404 })
 
-  const buffer = Buffer.from(data.audio_base64, 'base64')
-  return new NextResponse(buffer, {
+  const voiceRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${process.env.ELEVENLABS_VOICE_ID}`, {
+    method: 'POST',
+    headers: {
+      'xi-api-key': process.env.ELEVENLABS_API_KEY!,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      text: data.respuesta,
+      model_id: 'eleven_multilingual_v2',
+      voice_settings: { stability: 0.3, similarity_boost: 0.8, style: 0.5 }
+    })
+  })
+
+  const audioBuffer = await voiceRes.arrayBuffer()
+
+  return new NextResponse(audioBuffer, {
     headers: {
       'Content-Type': 'audio/mpeg',
-      'Content-Length': buffer.length.toString(),
+      'Content-Length': audioBuffer.byteLength.toString(),
     }
   })
 }
