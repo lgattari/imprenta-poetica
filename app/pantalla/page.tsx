@@ -75,15 +75,23 @@ export default function Pantalla() {
       setCaracteristicas(data.respuestas)
     }
     if (data.ultimaRespuesta && data.ultimaRespuesta.respuesta !== prevRespuesta.current) {
-      prevRespuesta.current = data.ultimaRespuesta.respuesta
-      setUltimaPregunta(data.ultimaRespuesta.pregunta)
-      setUltimaRespuesta(data.ultimaRespuesta.respuesta)
-      setHablando(true)
-      setTimeout(() => setHablando(false), 4000)
+    prevRespuesta.current = data.ultimaRespuesta.respuesta
+    setUltimaPregunta(data.ultimaRespuesta.pregunta)
+    setUltimaRespuesta(data.ultimaRespuesta.respuesta)
+    setHablando(true)
+    setTimeout(() => setHablando(false), 4000)
 
-      const audio = new Audio(`/api/audio?t=${Date.now()}`)
-      audio.play().catch(console.error)
+    try {
+      const res = await fetch(`/api/audio?t=${Date.now()}`)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const audio = new Audio(url)
+      audio.addEventListener('ended', () => URL.revokeObjectURL(url))
+      await audio.play()
+    } catch(e) {
+      console.error('audio error', e)
     }
+  }
   }
 
   useEffect(() => {
