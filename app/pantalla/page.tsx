@@ -167,110 +167,126 @@ export default function Pantalla() {
   }, [flotantes.length])
 
   useEffect(() => {
-    if (modo !== 'dios') return
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+  if (modo !== 'dios') return
+  const canvas = canvasRef.current
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
 
-    let t = 0
+  const W = 500, H = 500
+  const cx = W / 2, cy = H / 2 - 20
+  const NUM = 1800
 
-    function noise(x: number, y: number, z: number) {
-      return Math.sin(x * 1.5 + z) * Math.cos(y * 1.5 + z * 0.7) * 0.5 + 0.5
+  interface Particle {
+    x: number; y: number
+    tx: number; ty: number
+    vx: number; vy: number
+    size: number; alpha: number
+    chaos: number
+  }
+
+  function faceTarget(i: number): { x: number; y: number; alpha: number } {
+    const t = (i / NUM) * Math.PI * 2
+    const part = i % 5
+
+    if (part === 0) {
+      const a = (i / NUM) * Math.PI * 20
+      const r = 160 + Math.sin(a * 3) * 15
+      return { x: cx + Math.cos(a) * r * 0.85, y: cy + Math.sin(a) * r, alpha: 0.4 }
     }
-
-    function draw() {
-      const W = canvas!.width
-      const H = canvas!.height
-      ctx!.fillStyle = 'black'
-      ctx!.fillRect(0, 0, W, H)
-
-      const cx = W / 2
-      const cy = H / 2 - 40
-      const r = Math.min(W, H) * 0.28
-
-      for (let a = 0; a < Math.PI * 2; a += 0.01) {
-        const n = noise(Math.cos(a) * 3, Math.sin(a) * 3, t * 0.02)
-        const rr = r * (0.85 + n * 0.2)
-        const x = cx + Math.cos(a) * rr
-        const y = cy + Math.sin(a) * rr * 1.15
-        const alpha = 0.15 + n * 0.4
-        ctx!.fillStyle = `rgba(180,180,180,${alpha})`
-        ctx!.fillRect(x, y, 2, 2)
+    if (part === 1) {
+      const side = i % 2 === 0 ? -1 : 1
+      const a = (i / NUM) * Math.PI * 8
+      const er = 28 + Math.sin(a * 4) * 4
+      return { x: cx + side * 58 + Math.cos(a) * er, y: cy - 35 + Math.sin(a) * er * 0.7, alpha: 0.9 }
+    }
+    if (part === 2) {
+      const a = (i / NUM) * Math.PI * 6
+      const mw = 55 + (hablando ? Math.abs(Math.sin(Date.now() * 0.008)) * 20 : 5)
+      const mh = hablando ? 18 + Math.abs(Math.sin(Date.now() * 0.012)) * 22 : 6
+      return { x: cx + Math.cos(a) * mw, y: cy + 70 + Math.sin(a) * mh, alpha: 0.85 }
+    }
+    if (part === 3) {
+      return {
+        x: cx + (Math.random() - 0.5) * 280,
+        y: cy + (Math.random() - 0.5) * 320,
+        alpha: 0.15
       }
+    }
+    const nx = cx + Math.cos(t * 7) * 80 + Math.sin(t * 13) * 40
+    const ny = cy + Math.sin(t * 5) * 100 + Math.cos(t * 11) * 30
+    return { x: nx, y: ny, alpha: 0.25 }
+  }
 
-      for (let i = 0; i < 80; i++) {
-        const x = cx + (Math.random() - 0.5) * r * 2.2
-        const y = cy + (Math.random() - 0.5) * r * 2.5
-        const dist = Math.sqrt((x - cx) ** 2 + ((y - cy) / 1.15) ** 2)
-        if (dist < r * 1.1) {
-          ctx!.fillStyle = `rgba(255,255,255,${Math.random() * 0.08})`
-          ctx!.fillRect(x, y, Math.random() * 3, 1)
-        }
-      }
+  const particles: Particle[] = Array.from({ length: NUM }, (_, i) => {
+    const angle = Math.random() * Math.PI * 2
+    const r = Math.random() * 300
+    return {
+      x: cx + Math.cos(angle) * r,
+      y: cy + Math.sin(angle) * r,
+      tx: cx, ty: cy,
+      vx: (Math.random() - 0.5) * 3,
+      vy: (Math.random() - 0.5) * 3,
+      size: Math.random() * 1.8 + 0.4,
+      alpha: Math.random(),
+      chaos: Math.random(),
+    }
+  })
 
-      const eyeY = cy - r * 0.15
-      const eyeOff = r * 0.28
-      const eyeR = r * 0.1 + Math.sin(t * 0.05) * r * 0.02
-      const eyePulse = hablando ? 0.9 : 0.6 + Math.sin(t * 0.03) * 0.2
+  let t = 0
+  let frame: number
 
-      ;[-1, 1].forEach(side => {
-        const ex = cx + side * eyeOff
-        ctx!.beginPath()
-        ctx!.arc(ex, eyeY, eyeR, 0, Math.PI * 2)
-        ctx!.fillStyle = `rgba(255,255,255,${eyePulse})`
-        ctx!.fill()
-        ctx!.beginPath()
-        ctx!.arc(ex + side * eyeR * 0.15, eyeY, eyeR * 0.45, 0, Math.PI * 2)
-        ctx!.fillStyle = `rgba(0,0,0,0.9)`
-        ctx!.fill()
-        ctx!.beginPath()
-        ctx!.arc(ex + side * eyeR * 0.05, eyeY - eyeR * 0.1, eyeR * 0.12, 0, Math.PI * 2)
-        ctx!.fillStyle = `rgba(255,255,255,0.8)`
-        ctx!.fill()
-      })
+  function draw() {
+    ctx!.fillStyle = 'rgba(0,0,0,0.18)'
+    ctx!.fillRect(0, 0, W, H)
 
-      const mouthY = cy + r * 0.35
-      const mouthW = r * 0.45
-      const mouthOpen = hablando
-        ? Math.abs(Math.sin(t * 0.3)) * r * 0.12 + r * 0.04
-        : r * 0.02
+    const order = hablando ? 0.88 : 0.72
+
+    particles.forEach((p, i) => {
+      const target = faceTarget(i)
+      p.tx = target.x
+      p.ty = target.y
+
+      const noiseX = Math.sin(t * 0.015 + p.chaos * 8) * (hablando ? 6 : 18)
+      const noiseY = Math.cos(t * 0.012 + p.chaos * 6) * (hablando ? 6 : 18)
+
+      p.vx += ((p.tx + noiseX - p.x) * 0.04 - p.vx) * order
+      p.vy += ((p.ty + noiseY - p.y) * 0.04 - p.vy) * order
+      p.x += p.vx
+      p.y += p.vy
+
+      const distFromCenter = Math.sqrt((p.x - cx) ** 2 + (p.y - cy) ** 2)
+      const glow = hablando && distFromCenter < 180 ? 0.3 : 0
+
+      const r = hablando ? 200 : 160
+      const g = hablando ? 200 : 160
+      const b = hablando ? 255 : 200
+      const a = (target.alpha + glow) * (0.6 + Math.sin(t * 0.05 + p.chaos * 4) * 0.4)
 
       ctx!.beginPath()
-      ctx!.ellipse(cx, mouthY, mouthW, mouthOpen + 0.5, 0, 0, Math.PI * 2)
-      ctx!.fillStyle = `rgba(0,0,0,0.95)`
+      ctx!.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+      ctx!.fillStyle = `rgba(${r},${g},${b},${Math.min(a, 1)})`
       ctx!.fill()
-      ctx!.strokeStyle = `rgba(255,255,255,0.7)`
-      ctx!.lineWidth = 1.5
-      ctx!.stroke()
+    })
 
-      ctx!.beginPath()
-      ctx!.moveTo(cx - r * 0.06, cy + r * 0.1)
-      ctx!.lineTo(cx, cy + r * 0.22)
-      ctx!.lineTo(cx + r * 0.06, cy + r * 0.1)
-      ctx!.strokeStyle = `rgba(255,255,255,0.2)`
-      ctx!.lineWidth = 1
-      ctx!.stroke()
-
-      for (let y = 0; y < H; y += 4) {
-        ctx!.fillStyle = `rgba(0,0,0,0.15)`
-        ctx!.fillRect(0, y, W, 1)
-      }
-
-      if (Math.random() < 0.04) {
-        const gy = Math.random() * H
-        const gw = Math.random() * W * 0.4
-        ctx!.fillStyle = `rgba(255,255,255,${Math.random() * 0.15})`
-        ctx!.fillRect(Math.random() * W, gy, gw, Math.random() * 3 + 1)
-      }
-
-      t++
-      animRef.current = requestAnimationFrame(draw)
+    if (Math.random() < 0.06) {
+      const gy = Math.random() * H
+      ctx!.fillStyle = `rgba(180,180,255,${Math.random() * 0.08})`
+      ctx!.fillRect(0, gy, W, Math.random() * 2 + 1)
     }
 
-    draw()
-    return () => cancelAnimationFrame(animRef.current)
-  }, [modo, hablando])
+    for (let y = 0; y < H; y += 3) {
+      ctx!.fillStyle = 'rgba(0,0,0,0.08)'
+      ctx!.fillRect(0, y, W, 1)
+    }
+
+    t++
+    frame = requestAnimationFrame(draw)
+  }
+
+  draw()
+  return () => cancelAnimationFrame(frame)
+}, [modo, hablando])
 
   const transiciones = ['glitch 0.6s ease-out', 'caer 0.6s cubic-bezier(.68,-0.55,.27,1.55)', 'rotar 0.6s ease-out', 'explotar 0.6s ease-out']
 
@@ -296,12 +312,6 @@ export default function Pantalla() {
   if (modo === 'dios') return (
     <main className="min-h-screen bg-black flex flex-col items-center justify-center p-8 gap-6">
       <canvas ref={canvasRef} width={500} height={500} style={{ maxWidth: '60vh', maxHeight: '60vh' }} />
-      {ultimaRespuesta && (
-        <div className="max-w-2xl text-center" style={{ animation: 'fadein 0.8s ease-out' }}>
-          <p className="text-white/30 text-sm mb-2">{ultimaPregunta}</p>
-          <p className="text-white text-xl font-light leading-relaxed">{ultimaRespuesta}</p>
-        </div>
-      )}
       <style>{estilos}</style>
     </main>
   )
