@@ -50,6 +50,7 @@ export default function Pantalla() {
   const prevEstado = useRef<string>('')
   const prevRespuesta = useRef<string>('')
   const audioCtxRef = useRef<AudioContext | null>(null)
+  const hablandoRef = useRef(false)
 
   async function activarAudio() {
     const ctx = new AudioContext()
@@ -79,18 +80,35 @@ export default function Pantalla() {
     setUltimaPregunta(data.ultimaRespuesta.pregunta)
     setUltimaRespuesta(data.ultimaRespuesta.respuesta)
     setHablando(true)
-    setTimeout(() => setHablando(false), 4000)
+    hablandoRef.current = true
+    setTimeout(() => {
+      setHablando(false)
+      hablandoRef.current = false
+    }, 4000)
 
+    // try {
+    //   const res = await fetch(`/api/audio?t=${Date.now()}`)
+    //   const blob = await res.blob()
+    //   const url = URL.createObjectURL(blob)
+    //   const audio = new Audio(url)
+    //   audio.addEventListener('ended', () => URL.revokeObjectURL(url))
+    //   await audio.play()
+    // } catch(e) {
+    //   console.error('audio error', e)
+    // }
     try {
-      const res = await fetch(`/api/audio?t=${Date.now()}`)
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const audio = new Audio(url)
-      audio.addEventListener('ended', () => URL.revokeObjectURL(url))
-      await audio.play()
-    } catch(e) {
-      console.error('audio error', e)
-    }
+  const utterance = new SpeechSynthesisUtterance(data.ultimaRespuesta.respuesta)
+  utterance.lang = 'es-AR'
+  utterance.rate = 0.85
+  utterance.pitch = 0.6
+  utterance.volume = 1
+  utterance.onstart = () => { hablandoRef.current = true; setHablando(true) }
+  utterance.onend = () => { hablandoRef.current = false; setHablando(false) }
+  window.speechSynthesis.cancel()
+  window.speechSynthesis.speak(utterance)
+} catch(e) {
+  console.error('audio error', e)
+}
   }
   }
 
@@ -202,8 +220,8 @@ export default function Pantalla() {
     }
     if (part === 2) {
       const a = (i / NUM) * Math.PI * 6
-      const mw = 55 + (hablando ? Math.abs(Math.sin(Date.now() * 0.008)) * 20 : 5)
-      const mh = hablando ? 18 + Math.abs(Math.sin(Date.now() * 0.012)) * 22 : 6
+      const mw = 55 + (hablandoRef.current ? Math.abs(Math.sin(Date.now() * 0.008)) * 20 : 5)
+      const mh = hablandoRef.current ? 18 + Math.abs(Math.sin(Date.now() * 0.012)) * 22 : 6
       return { x: cx + Math.cos(a) * mw, y: cy + 70 + Math.sin(a) * mh, alpha: 0.85 }
     }
     if (part === 3) {
@@ -240,15 +258,15 @@ export default function Pantalla() {
     ctx!.fillStyle = 'rgba(0,0,0,0.18)'
     ctx!.fillRect(0, 0, W, H)
 
-    const order = hablando ? 0.88 : 0.72
+    const order = hablandoRef.current ? 0.88 : 0.72
 
     particles.forEach((p, i) => {
       const target = faceTarget(i)
       p.tx = target.x
       p.ty = target.y
 
-      const noiseX = Math.sin(t * 0.015 + p.chaos * 8) * (hablando ? 6 : 18)
-      const noiseY = Math.cos(t * 0.012 + p.chaos * 6) * (hablando ? 6 : 18)
+      const noiseX = Math.sin(t * 0.015 + p.chaos * 8) * (hablandoRef.current ? 6 : 18)
+      const noiseY = Math.cos(t * 0.012 + p.chaos * 6) * (hablandoRef.current ? 6 : 18)
 
       p.vx += ((p.tx + noiseX - p.x) * 0.04 - p.vx) * order
       p.vy += ((p.ty + noiseY - p.y) * 0.04 - p.vy) * order
@@ -256,11 +274,11 @@ export default function Pantalla() {
       p.y += p.vy
 
       const distFromCenter = Math.sqrt((p.x - cx) ** 2 + (p.y - cy) ** 2)
-      const glow = hablando && distFromCenter < 180 ? 0.3 : 0
+      const glow = hablandoRef.current && distFromCenter < 180 ? 0.3 : 0
 
-      const r = hablando ? 200 : 160
-      const g = hablando ? 200 : 160
-      const b = hablando ? 255 : 200
+      const r = hablandoRef.current ? 200 : 160
+      const g = hablandoRef.current ? 200 : 160
+      const b = hablandoRef.current ? 255 : 200
       const a = (target.alpha + glow) * (0.6 + Math.sin(t * 0.05 + p.chaos * 4) * 0.4)
 
       ctx!.beginPath()
@@ -286,7 +304,7 @@ export default function Pantalla() {
 
   draw()
   return () => cancelAnimationFrame(frame)
-}, [modo, hablando])
+}, [modo])
 
   const transiciones = ['glitch 0.6s ease-out', 'caer 0.6s cubic-bezier(.68,-0.55,.27,1.55)', 'rotar 0.6s ease-out', 'explotar 0.6s ease-out']
 
