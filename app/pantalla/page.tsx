@@ -220,8 +220,8 @@ export default function Pantalla() {
     }
     if (part === 2) {
       const a = (i / NUM) * Math.PI * 6
-      const mw = 55 + (hablandoRef.current ? Math.abs(Math.sin(Date.now() * 0.008)) * 20 : 5)
-      const mh = hablandoRef.current ? 18 + Math.abs(Math.sin(Date.now() * 0.012)) * 22 : 6
+      const mw = 55 + (hablandoRef.current ? Math.abs(Math.sin(t * 0.3)) * 20 : 5)
+      const mh = hablandoRef.current ? 18 + Math.abs(Math.sin(t * 0.4)) * 22 : 6
       return { x: cx + Math.cos(a) * mw, y: cy + 70 + Math.sin(a) * mh, alpha: 0.85 }
     }
     if (part === 3) {
