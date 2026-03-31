@@ -192,142 +192,164 @@ export default function Pantalla() {
   if (!ctx) return
 
   const W = 500, H = 500
-  const cx = W / 2, cy = H / 2 - 20
-  const NUM = 1800
-
-  interface Particle {
-    x: number; y: number
-    tx: number; ty: number
-    vx: number; vy: number
-    size: number; alpha: number
-    chaos: number
-  }
-
-  function faceTarget(i: number): { x: number; y: number; alpha: number } {
-    const part = i % 6
-
-    // contorno alargado, más oval que redondo
-    if (part === 0) {
-      const a = (i / NUM) * Math.PI * 24
-      const r = 140 + Math.sin(a * 5) * 20 + Math.sin(a * 11) * 8
-      return { 
-        x: cx + Math.cos(a) * r * 0.72, 
-        y: cy + Math.sin(a) * r * 1.25,
-        alpha: 0.3 
-      }
-    }
-    // ojos hundidos, más pequeños y separados
-    if (part === 1) {
-      const side = i % 2 === 0 ? -1 : 1
-      const a = (i / NUM) * Math.PI * 12
-      const er = 14 + Math.sin(a * 6) * 3
-      return { 
-        x: cx + side * 52 + Math.cos(a) * er, 
-        y: cy - 55 + Math.sin(a) * er * 0.5,
-        alpha: 1.0 
-      }
-    }
-    // boca rasgada, horizontal y larga
-    if (part === 2) {
-      const a = (i / NUM) * Math.PI * 4
-      const mw = 75 + (hablandoRef.current ? Math.abs(Math.sin(t * 0.3)) * 25 : 3)
-      const mh = hablandoRef.current ? 8 + Math.abs(Math.sin(t * 0.4)) * 28 : 2
-      return { 
-        x: cx + Math.cos(a) * mw, 
-        y: cy + 85 + Math.sin(a) * mh,
-        alpha: 0.95 
-      }
-    }
-    // grietas y deformaciones en la cara
-    if (part === 3) {
-      const a = (i / NUM) * Math.PI * 16
-      const cr = 60 + Math.sin(a * 7) * 40
-      return {
-        x: cx + Math.cos(a * 2.3) * cr * 0.6,
-        y: cy + Math.sin(a * 1.7) * cr,
-        alpha: 0.12
-      }
-    }
-    // partículas de ruido exterior
-    if (part === 4) {
-      const angle = (i / NUM) * Math.PI * 2
-      const r = 160 + Math.random() * 80
-      return {
-        x: cx + Math.cos(angle) * r,
-        y: cy + Math.sin(angle) * r * 1.3,
-        alpha: 0.06
-      }
-    }
-    // filamentos que salen de la cara hacia afuera
-    const a = (i / NUM) * Math.PI * 8
-    const r = 100 + Math.abs(Math.sin(a * 3)) * 120
-    return {
-      x: cx + Math.cos(a * 1.4) * r * 0.8,
-      y: cy + Math.sin(a * 0.9) * r * 1.1,
-      alpha: 0.08
-    }
-  }
-
-  const particles: Particle[] = Array.from({ length: NUM }, (_, i) => {
-    const angle = Math.random() * Math.PI * 2
-    const r = Math.random() * 300
-    return {
-      x: cx + Math.cos(angle) * r,
-      y: cy + Math.sin(angle) * r,
-      tx: cx, ty: cy,
-      vx: (Math.random() - 0.5) * 3,
-      vy: (Math.random() - 0.5) * 3,
-      size: Math.random() * 1.8 + 0.4,
-      alpha: Math.random(),
-      chaos: Math.random(),
-    }
-  })
-
   let t = 0
   let frame: number
 
-  function draw() {
-    ctx!.fillStyle = 'rgba(0,0,0,0.18)'
-    ctx!.fillRect(0, 0, W, H)
+  function drawMask(
+    ctx: CanvasRenderingContext2D,
+    cx: number, cy: number,
+    offsetX: number, offsetY: number,
+    color: string, alpha: number
+  ) {
+    ctx.save()
+    ctx.globalAlpha = alpha
+    ctx.strokeStyle = color
+    ctx.fillStyle = 'transparent'
+    ctx.lineWidth = 1.5
+    ctx.translate(offsetX, offsetY)
 
-    const order = hablandoRef.current ? 0.88 : 0.72
+    // cara ovalada alargada
+    ctx.beginPath()
+    ctx.ellipse(cx, cy, 95, 135, 0, 0, Math.PI * 2)
+    ctx.strokeStyle = color
+    ctx.stroke()
 
-    particles.forEach((p, i) => {
-      const target = faceTarget(i)
-      p.tx = target.x
-      p.ty = target.y
+    // frente plana — línea superior
+    ctx.beginPath()
+    ctx.moveTo(cx - 95, cy - 20)
+    ctx.lineTo(cx + 95, cy - 20)
+    ctx.globalAlpha = alpha * 0.3
+    ctx.stroke()
 
-      const noiseX = Math.sin(t * 0.015 + p.chaos * 8) * (hablandoRef.current ? 6 : 18)
-      const noiseY = Math.cos(t * 0.012 + p.chaos * 6) * (hablandoRef.current ? 6 : 18)
+    // ojo izquierdo — almendrado
+    ctx.globalAlpha = alpha
+    ctx.beginPath()
+    ctx.moveTo(cx - 65, cy - 30)
+    ctx.quadraticCurveTo(cx - 45, cy - 52, cx - 25, cy - 30)
+    ctx.quadraticCurveTo(cx - 45, cy - 18, cx - 65, cy - 30)
+    ctx.stroke()
 
-      p.vx += ((p.tx + noiseX - p.x) * 0.04 - p.vx) * order
-      p.vy += ((p.ty + noiseY - p.y) * 0.04 - p.vy) * order
-      p.x += p.vx
-      p.y += p.vy
+    // pupila izquierda
+    ctx.beginPath()
+    ctx.ellipse(cx - 45, cy - 34, 6, 10, 0, 0, Math.PI * 2)
+    ctx.fillStyle = color
+    ctx.globalAlpha = alpha * 0.8
+    ctx.fill()
 
-      const distFromCenter = Math.sqrt((p.x - cx) ** 2 + (p.y - cy) ** 2)
-      const glow = hablandoRef.current && distFromCenter < 180 ? 0.3 : 0
+    // ojo derecho
+    ctx.globalAlpha = alpha
+    ctx.beginPath()
+    ctx.moveTo(cx + 25, cy - 30)
+    ctx.quadraticCurveTo(cx + 45, cy - 52, cx + 65, cy - 30)
+    ctx.quadraticCurveTo(cx + 45, cy - 18, cx + 25, cy - 30)
+    ctx.stroke()
 
-      const r2 = hablandoRef.current ? 255 : 140
-      const g2 = hablandoRef.current ? 80 : 140
-      const b2 = hablandoRef.current ? 60 : 160
-      const a = (target.alpha + glow) * (0.5 + Math.sin(t * 0.04 + p.chaos * 5) * 0.5)
+    // pupila derecha
+    ctx.beginPath()
+    ctx.ellipse(cx + 45, cy - 34, 6, 10, 0, 0, Math.PI * 2)
+    ctx.fillStyle = color
+    ctx.globalAlpha = alpha * 0.8
+    ctx.fill()
 
-      ctx!.beginPath()
-      ctx!.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-      ctx!.fillStyle = `rgba(${r2},${g2},${b2},${Math.min(a, 1)})`
-      ctx!.fill()
-    })
+    // nariz — dos líneas simples
+    ctx.globalAlpha = alpha * 0.6
+    ctx.beginPath()
+    ctx.moveTo(cx - 10, cy - 5)
+    ctx.lineTo(cx - 18, cy + 25)
+    ctx.lineTo(cx - 8, cy + 28)
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.moveTo(cx + 10, cy - 5)
+    ctx.lineTo(cx + 18, cy + 25)
+    ctx.lineTo(cx + 8, cy + 28)
+    ctx.stroke()
 
-    if (Math.random() < 0.06) {
-      const gy = Math.random() * H
-      ctx!.fillStyle = `rgba(180,180,255,${Math.random() * 0.08})`
-      ctx!.fillRect(0, gy, W, Math.random() * 2 + 1)
+    // boca
+    ctx.globalAlpha = alpha
+    const mouthOpen = hablandoRef.current
+      ? Math.abs(Math.sin(t * 0.25)) * 35
+      : 3
+
+    ctx.beginPath()
+    ctx.moveTo(cx - 45, cy + 68)
+    ctx.quadraticCurveTo(cx, cy + 68 + mouthOpen, cx + 45, cy + 68)
+    ctx.stroke()
+
+    if (hablandoRef.current) {
+      ctx.beginPath()
+      ctx.moveTo(cx - 38, cy + 68)
+      ctx.quadraticCurveTo(cx, cy + 68 - mouthOpen * 0.6, cx + 38, cy + 68)
+      ctx.stroke()
     }
 
+    // líneas decorativas NOH — ceja izquierda
+    ctx.globalAlpha = alpha * 0.5
+    ctx.beginPath()
+    ctx.moveTo(cx - 70, cy - 65)
+    ctx.quadraticCurveTo(cx - 45, cy - 78, cx - 20, cy - 68)
+    ctx.stroke()
+
+    // ceja derecha
+    ctx.beginPath()
+    ctx.moveTo(cx + 20, cy - 68)
+    ctx.quadraticCurveTo(cx + 45, cy - 78, cx + 70, cy - 65)
+    ctx.stroke()
+
+    ctx.restore()
+  }
+
+  function draw() {
+    if (!ctx) return
+    ctx.fillStyle = 'rgba(0,0,0,0.85)'
+    ctx.fillRect(0, 0, W, H)
+
+    const cx = W / 2
+    const cy = H / 2
+
+    // glitch desplazamiento cromático
+    const glitchX = Math.sin(t * 0.07) * 2
+    const glitchY = Math.cos(t * 0.05) * 1
+
+    // capa roja — desplazada
+    drawMask(ctx, cx, cy, -glitchX * 3, glitchY, 'rgba(255,30,30,0.6)', 0.7)
+    // capa cian — desplazada al otro lado
+    drawMask(ctx, cx, cy, glitchX * 3, -glitchY, 'rgba(30,255,220,0.6)', 0.7)
+    // capa blanca principal
+    drawMask(ctx, cx, cy, 0, 0, 'rgba(220,220,220,0.95)', 0.9)
+
+    // glitch lines — barras horizontales aleatorias
+    if (Math.random() < 0.12) {
+      const numLines = Math.floor(Math.random() * 4) + 1
+      for (let i = 0; i < numLines; i++) {
+        const gy = Math.random() * H
+        const gh = Math.random() * 8 + 1
+        const gw = Math.random() * W * 0.7 + W * 0.15
+        const gx = Math.random() * (W - gw)
+        ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.12})`
+        ctx.fillRect(gx, gy, gw, gh)
+      }
+    }
+
+    // desplazamiento de banda — el efecto más VHS
+    if (Math.random() < 0.08) {
+      const bandY = Math.random() * H
+      const bandH = Math.random() * 30 + 5
+      const shift = (Math.random() - 0.5) * 40
+      const imageData = ctx.getImageData(0, bandY, W, bandH)
+      ctx.putImageData(imageData, shift, bandY)
+    }
+
+    // scan lines sutiles
     for (let y = 0; y < H; y += 3) {
-      ctx!.fillStyle = 'rgba(0,0,0,0.08)'
-      ctx!.fillRect(0, y, W, 1)
+      ctx.fillStyle = 'rgba(0,0,0,0.06)'
+      ctx.fillRect(0, y, W, 1)
+    }
+
+    // cuando habla — pulso de luz
+    if (hablandoRef.current) {
+      const pulse = Math.abs(Math.sin(t * 0.2)) * 0.15
+      ctx.fillStyle = `rgba(255,100,50,${pulse})`
+      ctx.fillRect(0, 0, W, H)
     }
 
     t++
@@ -361,7 +383,12 @@ export default function Pantalla() {
 
   if (modo === 'dios') return (
     <main className="min-h-screen bg-black flex flex-col items-center justify-center p-8 gap-6">
-      <canvas ref={canvasRef} width={500} height={500} style={{ maxWidth: '60vh', maxHeight: '60vh' }} />
+      <canvas
+            ref={canvasRef}
+            width={500}
+            height={500}
+            style={{ maxWidth: '75vh', maxHeight: '75vh' }}
+          />
       <style>{estilos}</style>
     </main>
   )
