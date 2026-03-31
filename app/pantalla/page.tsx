@@ -204,36 +204,68 @@ export default function Pantalla() {
   }
 
   function faceTarget(i: number): { x: number; y: number; alpha: number } {
-    const t = (i / NUM) * Math.PI * 2
-    const part = i % 5
+    const part = i % 6
 
+    // contorno alargado, más oval que redondo
     if (part === 0) {
-      const a = (i / NUM) * Math.PI * 20
-      const r = 160 + Math.sin(a * 3) * 15
-      return { x: cx + Math.cos(a) * r * 0.85, y: cy + Math.sin(a) * r, alpha: 0.4 }
-    }
-    if (part === 1) {
-      const side = i % 2 === 0 ? -1 : 1
-      const a = (i / NUM) * Math.PI * 8
-      const er = 28 + Math.sin(a * 4) * 4
-      return { x: cx + side * 58 + Math.cos(a) * er, y: cy - 35 + Math.sin(a) * er * 0.7, alpha: 0.9 }
-    }
-    if (part === 2) {
-      const a = (i / NUM) * Math.PI * 6
-      const mw = 55 + (hablandoRef.current ? Math.abs(Math.sin(t * 0.3)) * 20 : 5)
-      const mh = hablandoRef.current ? 18 + Math.abs(Math.sin(t * 0.4)) * 22 : 6
-      return { x: cx + Math.cos(a) * mw, y: cy + 70 + Math.sin(a) * mh, alpha: 0.85 }
-    }
-    if (part === 3) {
-      return {
-        x: cx + (Math.random() - 0.5) * 280,
-        y: cy + (Math.random() - 0.5) * 320,
-        alpha: 0.15
+      const a = (i / NUM) * Math.PI * 24
+      const r = 140 + Math.sin(a * 5) * 20 + Math.sin(a * 11) * 8
+      return { 
+        x: cx + Math.cos(a) * r * 0.72, 
+        y: cy + Math.sin(a) * r * 1.25,
+        alpha: 0.3 
       }
     }
-    const nx = cx + Math.cos(t * 7) * 80 + Math.sin(t * 13) * 40
-    const ny = cy + Math.sin(t * 5) * 100 + Math.cos(t * 11) * 30
-    return { x: nx, y: ny, alpha: 0.25 }
+    // ojos hundidos, más pequeños y separados
+    if (part === 1) {
+      const side = i % 2 === 0 ? -1 : 1
+      const a = (i / NUM) * Math.PI * 12
+      const er = 14 + Math.sin(a * 6) * 3
+      return { 
+        x: cx + side * 52 + Math.cos(a) * er, 
+        y: cy - 55 + Math.sin(a) * er * 0.5,
+        alpha: 1.0 
+      }
+    }
+    // boca rasgada, horizontal y larga
+    if (part === 2) {
+      const a = (i / NUM) * Math.PI * 4
+      const mw = 75 + (hablandoRef.current ? Math.abs(Math.sin(t * 0.3)) * 25 : 3)
+      const mh = hablandoRef.current ? 8 + Math.abs(Math.sin(t * 0.4)) * 28 : 2
+      return { 
+        x: cx + Math.cos(a) * mw, 
+        y: cy + 85 + Math.sin(a) * mh,
+        alpha: 0.95 
+      }
+    }
+    // grietas y deformaciones en la cara
+    if (part === 3) {
+      const a = (i / NUM) * Math.PI * 16
+      const cr = 60 + Math.sin(a * 7) * 40
+      return {
+        x: cx + Math.cos(a * 2.3) * cr * 0.6,
+        y: cy + Math.sin(a * 1.7) * cr,
+        alpha: 0.12
+      }
+    }
+    // partículas de ruido exterior
+    if (part === 4) {
+      const angle = (i / NUM) * Math.PI * 2
+      const r = 160 + Math.random() * 80
+      return {
+        x: cx + Math.cos(angle) * r,
+        y: cy + Math.sin(angle) * r * 1.3,
+        alpha: 0.06
+      }
+    }
+    // filamentos que salen de la cara hacia afuera
+    const a = (i / NUM) * Math.PI * 8
+    const r = 100 + Math.abs(Math.sin(a * 3)) * 120
+    return {
+      x: cx + Math.cos(a * 1.4) * r * 0.8,
+      y: cy + Math.sin(a * 0.9) * r * 1.1,
+      alpha: 0.08
+    }
   }
 
   const particles: Particle[] = Array.from({ length: NUM }, (_, i) => {
@@ -276,14 +308,14 @@ export default function Pantalla() {
       const distFromCenter = Math.sqrt((p.x - cx) ** 2 + (p.y - cy) ** 2)
       const glow = hablandoRef.current && distFromCenter < 180 ? 0.3 : 0
 
-      const r = hablandoRef.current ? 200 : 160
-      const g = hablandoRef.current ? 200 : 160
-      const b = hablandoRef.current ? 255 : 200
-      const a = (target.alpha + glow) * (0.6 + Math.sin(t * 0.05 + p.chaos * 4) * 0.4)
+      const r2 = hablandoRef.current ? 255 : 140
+      const g2 = hablandoRef.current ? 80 : 140
+      const b2 = hablandoRef.current ? 60 : 160
+      const a = (target.alpha + glow) * (0.5 + Math.sin(t * 0.04 + p.chaos * 5) * 0.5)
 
       ctx!.beginPath()
       ctx!.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-      ctx!.fillStyle = `rgba(${r},${g},${b},${Math.min(a, 1)})`
+      ctx!.fillStyle = `rgba(${r2},${g2},${b2},${Math.min(a, 1)})`
       ctx!.fill()
     })
 
