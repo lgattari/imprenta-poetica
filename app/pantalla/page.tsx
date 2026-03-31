@@ -266,13 +266,13 @@ export default function Pantalla() {
 
     // boca
     ctx.globalAlpha = alpha
+    
     const mouthOpen = hablandoRef.current
-      ? Math.abs(Math.sin(t * 0.25)) * 35
+      ? Math.abs(Math.sin(Date.now() * 0.008)) * 35
       : 3
-
     ctx.beginPath()
     ctx.moveTo(cx - 45, cy + 68)
-    ctx.quadraticCurveTo(cx, cy + 68 + mouthOpen, cx + 45, cy + 68)
+    ctx.quadraticCurveTo(cx, cy + 68 - mouthOpen * 0.6, cx + 38, cy + 68)
     ctx.stroke()
 
     if (hablandoRef.current) {
