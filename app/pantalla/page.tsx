@@ -195,161 +195,67 @@ export default function Pantalla() {
   let t = 0
   let frame: number
 
-  function drawMask(
-    ctx: CanvasRenderingContext2D,
-    cx: number, cy: number,
-    offsetX: number, offsetY: number,
-    color: string, alpha: number
-  ) {
-    ctx.save()
-    ctx.globalAlpha = alpha
-    ctx.strokeStyle = color
-    ctx.fillStyle = 'transparent'
-    ctx.lineWidth = 1.5
-    ctx.translate(offsetX, offsetY)
-
-    // cara ovalada alargada
-    ctx.beginPath()
-    ctx.ellipse(cx, cy, 95, 135, 0, 0, Math.PI * 2)
-    ctx.strokeStyle = color
-    ctx.stroke()
-
-    // frente plana — línea superior
-    ctx.beginPath()
-    ctx.moveTo(cx - 95, cy - 20)
-    ctx.lineTo(cx + 95, cy - 20)
-    ctx.globalAlpha = alpha * 0.3
-    ctx.stroke()
-
-    // ojo izquierdo — almendrado
-    ctx.globalAlpha = alpha
-    ctx.beginPath()
-    ctx.moveTo(cx - 65, cy - 30)
-    ctx.quadraticCurveTo(cx - 45, cy - 52, cx - 25, cy - 30)
-    ctx.quadraticCurveTo(cx - 45, cy - 18, cx - 65, cy - 30)
-    ctx.stroke()
-
-    // pupila izquierda
-    ctx.beginPath()
-    ctx.ellipse(cx - 45, cy - 34, 6, 10, 0, 0, Math.PI * 2)
-    ctx.fillStyle = color
-    ctx.globalAlpha = alpha * 0.8
-    ctx.fill()
-
-    // ojo derecho
-    ctx.globalAlpha = alpha
-    ctx.beginPath()
-    ctx.moveTo(cx + 25, cy - 30)
-    ctx.quadraticCurveTo(cx + 45, cy - 52, cx + 65, cy - 30)
-    ctx.quadraticCurveTo(cx + 45, cy - 18, cx + 25, cy - 30)
-    ctx.stroke()
-
-    // pupila derecha
-    ctx.beginPath()
-    ctx.ellipse(cx + 45, cy - 34, 6, 10, 0, 0, Math.PI * 2)
-    ctx.fillStyle = color
-    ctx.globalAlpha = alpha * 0.8
-    ctx.fill()
-
-    // nariz — dos líneas simples
-    ctx.globalAlpha = alpha * 0.6
-    ctx.beginPath()
-    ctx.moveTo(cx - 10, cy - 5)
-    ctx.lineTo(cx - 18, cy + 25)
-    ctx.lineTo(cx - 8, cy + 28)
-    ctx.stroke()
-    ctx.beginPath()
-    ctx.moveTo(cx + 10, cy - 5)
-    ctx.lineTo(cx + 18, cy + 25)
-    ctx.lineTo(cx + 8, cy + 28)
-    ctx.stroke()
-
-    // boca
-    ctx.globalAlpha = alpha
-    
-    const mouthOpen = hablandoRef.current
-      ? Math.abs(Math.sin(Date.now() * 0.008)) * 35
-      : 3
-    ctx.beginPath()
-    ctx.moveTo(cx - 45, cy + 68)
-    ctx.quadraticCurveTo(cx, cy + 68 - mouthOpen * 0.6, cx + 38, cy + 68)
-    ctx.stroke()
-
-    if (hablandoRef.current) {
-      ctx.beginPath()
-      ctx.moveTo(cx - 38, cy + 68)
-      ctx.quadraticCurveTo(cx, cy + 68 - mouthOpen * 0.6, cx + 38, cy + 68)
-      ctx.stroke()
-    }
-
-    // líneas decorativas NOH — ceja izquierda
-    ctx.globalAlpha = alpha * 0.5
-    ctx.beginPath()
-    ctx.moveTo(cx - 70, cy - 65)
-    ctx.quadraticCurveTo(cx - 45, cy - 78, cx - 20, cy - 68)
-    ctx.stroke()
-
-    // ceja derecha
-    ctx.beginPath()
-    ctx.moveTo(cx + 20, cy - 68)
-    ctx.quadraticCurveTo(cx + 45, cy - 78, cx + 70, cy - 65)
-    ctx.stroke()
-
-    ctx.restore()
-  }
-
   function draw() {
     if (!ctx) return
-    ctx.fillStyle = 'rgba(0,0,0,0.85)'
+
+    // estática de TV
+    const imageData = ctx.createImageData(W, H)
+    const data = imageData.data
+    for (let i = 0; i < data.length; i += 4) {
+      const v = Math.random() * 255
+      data[i] = v
+      data[i+1] = v
+      data[i+2] = v
+      data[i+3] = 255
+    }
+    ctx.putImageData(imageData, 0, 0)
+
+    // overlay negro semitransparente para que no sea tan agresiva
+    ctx.fillStyle = 'rgba(0,0,0,0.72)'
     ctx.fillRect(0, 0, W, H)
 
-    const cx = W / 2
-    const cy = H / 2
-
-    // glitch desplazamiento cromático
-    const glitchX = Math.sin(t * 0.07) * 2
-    const glitchY = Math.cos(t * 0.05) * 1
-
-    // capa roja — desplazada
-    drawMask(ctx, cx, cy, -glitchX * 3, glitchY, 'rgba(255,30,30,0.6)', 0.7)
-    // capa cian — desplazada al otro lado
-    drawMask(ctx, cx, cy, glitchX * 3, -glitchY, 'rgba(30,255,220,0.6)', 0.7)
-    // capa blanca principal
-    drawMask(ctx, cx, cy, 0, 0, 'rgba(220,220,220,0.95)', 0.9)
-
-    // glitch lines — barras horizontales aleatorias
-    if (Math.random() < 0.12) {
-      const numLines = Math.floor(Math.random() * 4) + 1
-      for (let i = 0; i < numLines; i++) {
-        const gy = Math.random() * H
-        const gh = Math.random() * 8 + 1
-        const gw = Math.random() * W * 0.7 + W * 0.15
-        const gx = Math.random() * (W - gw)
-        ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.12})`
-        ctx.fillRect(gx, gy, gw, gh)
-      }
-    }
-
-    // desplazamiento de banda — el efecto más VHS
-    if (Math.random() < 0.08) {
-      const bandY = Math.random() * H
-      const bandH = Math.random() * 30 + 5
-      const shift = (Math.random() - 0.5) * 40
-      const imageData = ctx.getImageData(0, bandY, W, bandH)
-      ctx.putImageData(imageData, shift, bandY)
-    }
-
-    // scan lines sutiles
+    // scan lines
     for (let y = 0; y < H; y += 3) {
-      ctx.fillStyle = 'rgba(0,0,0,0.06)'
+      ctx.fillStyle = 'rgba(0,0,0,0.25)'
       ctx.fillRect(0, y, W, 1)
     }
 
-    // cuando habla — pulso de luz
+    // glitch horizontal ocasional
+    if (Math.random() < 0.06) {
+      const gy = Math.random() * H
+      const gh = Math.random() * 12 + 2
+      const imageSlice = ctx.getImageData(0, gy, W, gh)
+      ctx.putImageData(imageSlice, (Math.random() - 0.5) * 60, gy)
+    }
+
+    // ecualizador cuando habla
     if (hablandoRef.current) {
-      const pulse = Math.abs(Math.sin(t * 0.2)) * 0.15
-      ctx.fillStyle = `rgba(255,100,50,${pulse})`
+      const bars = 64
+      const barW = W / bars
+      const centerY = H / 2
+
+      for (let i = 0; i < bars; i++) {
+        const freq = Math.sin(t * 0.15 + i * 0.4) * 0.5
+          + Math.sin(t * 0.23 + i * 0.7) * 0.3
+          + Math.sin(t * 0.31 + i * 0.2) * 0.2
+          + (Math.random() - 0.5) * 0.3
+
+        const barH = Math.abs(freq) * 180 + 10
+        const x = i * barW
+        const alpha = 0.7 + Math.abs(freq) * 0.3
+
+        ctx.fillStyle = `rgba(255,255,255,${alpha})`
+        ctx.fillRect(x, centerY - barH / 2, barW - 1, barH)
+      }
+
+      // pulso de luz cuando habla
+      const pulse = Math.abs(Math.sin(t * 0.18)) * 0.08
+      ctx.fillStyle = `rgba(255,255,255,${pulse})`
       ctx.fillRect(0, 0, W, H)
+    } else {
+      // línea plana cuando no habla
+      ctx.fillStyle = 'rgba(255,255,255,0.15)'
+      ctx.fillRect(0, H / 2 - 1, W, 2)
     }
 
     t++
