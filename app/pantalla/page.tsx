@@ -52,6 +52,17 @@ export default function Pantalla() {
   const audioCtxRef = useRef<AudioContext | null>(null)
   const hablandoRef = useRef(false)
 
+  useEffect(() => {
+    const check = setInterval(() => {
+      const speaking = window.speechSynthesis.speaking
+      if (speaking !== hablandoRef.current) {
+        hablandoRef.current = speaking
+        setHablando(speaking)
+      }
+    }, 100)
+    return () => clearInterval(check)
+  }, [])
+
   async function activarAudio() {
     const ctx = new AudioContext()
     await ctx.resume()
@@ -98,35 +109,19 @@ export default function Pantalla() {
     // }
     try {
       const texto = data.ultimaRespuesta.respuesta
-      const duracionEstimada = (texto.length / 12) * 1000 // ~12 chars por segundo
-
       window.speechSynthesis.cancel()
-      
       const utterance = new SpeechSynthesisUtterance(texto)
       utterance.lang = 'es-AR'
       utterance.rate = 0.85
       utterance.pitch = 0.6
       utterance.volume = 1
 
-      hablandoRef.current = true
-      setHablando(true)
-
-      // timer manual basado en largo del texto
-      const timer = setTimeout(() => {
-        hablandoRef.current = false
-        setHablando(false)
-      }, duracionEstimada)
-
-      // fix bug Chrome
       const keepAlive = setInterval(() => {
         if (window.speechSynthesis.speaking) {
           window.speechSynthesis.pause()
           window.speechSynthesis.resume()
         } else {
           clearInterval(keepAlive)
-          clearTimeout(timer)
-          hablandoRef.current = false
-          setHablando(false)
         }
       }, 5000)
 
