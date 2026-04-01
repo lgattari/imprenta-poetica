@@ -219,6 +219,7 @@ export default function Pantalla() {
   const H = canvas.height = window.innerHeight
   let t = 0
   let frame: number
+  
   function draw() {
     if (!ctx) return
 
