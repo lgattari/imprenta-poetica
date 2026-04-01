@@ -97,19 +97,43 @@ export default function Pantalla() {
     //   console.error('audio error', e)
     // }
     try {
-  const utterance = new SpeechSynthesisUtterance(data.ultimaRespuesta.respuesta)
-  utterance.lang = 'es-AR'
-  utterance.rate = 0.85
-  utterance.pitch = 0.6
-  utterance.volume = 1
-  utterance.onstart = () => { hablandoRef.current = true; setHablando(true) }
-  utterance.onend = () => { hablandoRef.current = false; setHablando(false) }
-  window.speechSynthesis.cancel()
-  window.speechSynthesis.speak(utterance)
-} catch(e) {
-  console.error('audio error', e)
-}
-  }
+      const texto = data.ultimaRespuesta.respuesta
+      const duracionEstimada = (texto.length / 12) * 1000 // ~12 chars por segundo
+
+      window.speechSynthesis.cancel()
+      
+      const utterance = new SpeechSynthesisUtterance(texto)
+      utterance.lang = 'es-AR'
+      utterance.rate = 0.85
+      utterance.pitch = 0.6
+      utterance.volume = 1
+
+      hablandoRef.current = true
+      setHablando(true)
+
+      // timer manual basado en largo del texto
+      const timer = setTimeout(() => {
+        hablandoRef.current = false
+        setHablando(false)
+      }, duracionEstimada)
+
+      // fix bug Chrome
+      const keepAlive = setInterval(() => {
+        if (window.speechSynthesis.speaking) {
+          window.speechSynthesis.pause()
+          window.speechSynthesis.resume()
+        } else {
+          clearInterval(keepAlive)
+          clearTimeout(timer)
+          hablandoRef.current = false
+          setHablando(false)
+        }
+      }, 5000)
+
+      window.speechSynthesis.speak(utterance)
+    } catch(e) {
+      console.error('audio error', e)
+    }
   }
 
   useEffect(() => {
@@ -191,10 +215,10 @@ export default function Pantalla() {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
 
-  const W = 500, H = 500
+  const W = canvas.width = window.innerWidth
+  const H = canvas.height = window.innerHeight
   let t = 0
   let frame: number
-
   function draw() {
     if (!ctx) return
 
@@ -289,12 +313,12 @@ export default function Pantalla() {
 
   if (modo === 'dios') return (
     <main className="min-h-screen bg-black flex flex-col items-center justify-center p-8 gap-6">
-      <canvas
-            ref={canvasRef}
-            width={500}
-            height={500}
-            style={{ maxWidth: '75vh', maxHeight: '75vh' }}
-          />
+     <canvas
+        ref={canvasRef}
+        width={window.innerWidth}
+        height={window.innerHeight}
+        style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh' }}
+      />
       <style>{estilos}</style>
     </main>
   )
