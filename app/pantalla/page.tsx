@@ -71,10 +71,10 @@ export default function Pantalla() {
   }
 
   async function cargar() {
-    const res = await fetch('/api/estado')
-    const data = await res.json()
+  const res = await fetch('/api/estado')
+  const data = await res.json()
 
-    if (data.estado === 'dios' && prevEstado.current !== 'dios') {
+  if (data.estado === 'dios' && prevEstado.current !== 'dios') {
       prevEstado.current = 'dios'
       setModo('dios')
       
@@ -106,50 +106,37 @@ export default function Pantalla() {
       prevEstado.current = 'activa'
       setCaracteristicas(data.respuestas)
     }
+
     if (data.ultimaRespuesta && data.ultimaRespuesta.respuesta !== prevRespuesta.current) {
-    prevRespuesta.current = data.ultimaRespuesta.respuesta
-    setUltimaPregunta(data.ultimaRespuesta.pregunta)
-    setUltimaRespuesta(data.ultimaRespuesta.respuesta)
-    setHablando(true)
-    hablandoRef.current = true
-    setTimeout(() => {
-      setHablando(false)
-      hablandoRef.current = false
-    }, 4000)
+      if (window.speechSynthesis.speaking) return  // esperá que termine el monólogo
+      
+      prevRespuesta.current = data.ultimaRespuesta.respuesta
+      setUltimaPregunta(data.ultimaRespuesta.pregunta)
+      setUltimaRespuesta(data.ultimaRespuesta.respuesta)
 
-    // try {
-    //   const res = await fetch(`/api/audio?t=${Date.now()}`)
-    //   const blob = await res.blob()
-    //   const url = URL.createObjectURL(blob)
-    //   const audio = new Audio(url)
-    //   audio.addEventListener('ended', () => URL.revokeObjectURL(url))
-    //   await audio.play()
-    // } catch(e) {
-    //   console.error('audio error', e)
-    // }
-    try {
-      const texto = data.ultimaRespuesta.respuesta
-      window.speechSynthesis.cancel()
-      const utterance = new SpeechSynthesisUtterance(texto)
-      utterance.lang = 'es-AR'
-      utterance.rate = 0.85
-      utterance.pitch = 0.6
-      utterance.volume = 1
+      try {
+        const texto = data.ultimaRespuesta.respuesta
+        window.speechSynthesis.cancel()
+        const utterance = new SpeechSynthesisUtterance(texto)
+        utterance.lang = 'es-AR'
+        utterance.rate = 0.85
+        utterance.pitch = 0.6
+        utterance.volume = 1
 
-      const keepAlive = setInterval(() => {
-        if (window.speechSynthesis.speaking) {
-          window.speechSynthesis.pause()
-          window.speechSynthesis.resume()
-        } else {
-          clearInterval(keepAlive)
-        }
-      }, 5000)
+        const keepAlive = setInterval(() => {
+          if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.pause()
+            window.speechSynthesis.resume()
+          } else {
+            clearInterval(keepAlive)
+          }
+        }, 5000)
 
-      window.speechSynthesis.speak(utterance)
-    } catch(e) {
-      console.error('audio error', e)
+        window.speechSynthesis.speak(utterance)
+      } catch(e) {
+        console.error('audio error', e)
+      }
     }
-  }
   }
 
   useEffect(() => {
