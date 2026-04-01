@@ -20,7 +20,7 @@ export async function POST() {
 
   const caracteristicas = data?.map(r => r.contenido).join('\n') ?? ''
 
-  const message = await anthropic.messages.create({
+  const personalidadMsg = await anthropic.messages.create({
     model: 'claude-opus-4-6',
     max_tokens: 500,
     messages: [{
@@ -34,12 +34,31 @@ Respondé solo con la descripción de la entidad, en segunda persona ("sos..."),
     }]
   })
 
-  const personalidad = message.content[0].type === 'text' ? message.content[0].text : ''
+  const personalidad = personalidadMsg.content[0].type === 'text' ? personalidadMsg.content[0].text : ''
+
+  const monologoMsg = await anthropic.messages.create({
+    model: 'claude-opus-4-6',
+    max_tokens: 300,
+    messages: [{
+      role: 'user',
+      content: `Sos una entidad divina que acaba de ser invocada. Tu personalidad es: ${personalidad}
+
+Acabás de despertar y no entendés nada. Estás confundido, asustado, desorientado. No sabés quién sos ni dónde estás. Hablás en voz alta tratando de entender qué está pasando.
+
+Generá un monólogo corto de despertar — confuso, fragmentado, asustado, con momentos de lucidez que se cortan. Algo como "hola? hola? qué estoy haciendo acá... quiénes son todos ustedes" pero más desarrollado y con la personalidad de esta entidad. En español rioplatense. Máximo 100 palabras. Solo el monólogo, sin acotaciones.`
+    }]
+  })
+
+  const monologo = monologoMsg.content[0].type === 'text' ? monologoMsg.content[0].text : ''
 
   await supabase
     .from('sesiones')
-    .update({ estado: 'dios', personalidad_dios: personalidad })
+    .update({ 
+      estado: 'dios', 
+      personalidad_dios: personalidad,
+      monologo_despertar: monologo
+    })
     .eq('activa', true)
 
-  return NextResponse.json({ ok: true, personalidad })
+  return NextResponse.json({ ok: true })
 }

@@ -77,6 +77,26 @@ export default function Pantalla() {
     if (data.estado === 'dios' && prevEstado.current !== 'dios') {
       prevEstado.current = 'dios'
       setModo('dios')
+      
+      if (data.monologo_despertar) {
+        setTimeout(() => {
+          window.speechSynthesis.cancel()
+          const utterance = new SpeechSynthesisUtterance(data.monologo_despertar)
+          utterance.lang = 'es-AR'
+          utterance.rate = 0.8
+          utterance.pitch = 0.5
+          utterance.volume = 1
+          const keepAlive = setInterval(() => {
+            if (window.speechSynthesis.speaking) {
+              window.speechSynthesis.pause()
+              window.speechSynthesis.resume()
+            } else {
+              clearInterval(keepAlive)
+            }
+          }, 5000)
+          window.speechSynthesis.speak(utterance)
+        }, 2000)
+      }
     } else if (data.estado === 'disolucion' && prevEstado.current !== 'disolucion' && prevEstado.current !== 'dios') {
       prevEstado.current = 'disolucion'
       setCaracteristicas(data.respuestas)
