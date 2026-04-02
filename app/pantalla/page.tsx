@@ -144,6 +144,7 @@ export default function Pantalla() {
       } catch(e) {
         console.error('audio error', e)
       }
+    }
   }
 
   useEffect(() => {
