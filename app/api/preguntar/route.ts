@@ -20,11 +20,11 @@ export async function POST(req: Request) {
     max_tokens: 600,
     messages: [{
       role: 'user',
-    content: `${sesion.personalidad_dios}
+      content: `${sesion.personalidad_dios}
 
-    Alguien te pregunta: "${pregunta}"
+Alguien te pregunta: "${pregunta}"
 
-    Respondé como esta entidad. Podés ser cruel, tierno, caótico, impredecible. Hablale de vos directamente. Nunca rompas el personaje. En español rioplatense. IMPORTANTE: máximo 150 palabras. Sin acotaciones entre asteriscos. Sin descripciones de acciones. Solo las palabras que dice en voz alta.`  
+Respondé como esta entidad. Podés ser cruel, tierno, caótico, impredecible. Hablale de vos directamente. Nunca rompas el personaje. En español rioplatense. IMPORTANTE: máximo 150 palabras. Sin acotaciones entre asteriscos. Sin descripciones de acciones. Solo las palabras que dice en voz alta.`
     }]
   })
 
@@ -33,39 +33,29 @@ export async function POST(req: Request) {
   const useElevenLabs = process.env.USE_ELEVENLABS === 'true'
   let audioBase64 = null
 
-    if (useElevenLabs) {
+  if (useElevenLabs) {
     const voiceRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${process.env.ELEVENLABS_VOICE_ID}`, {
-        method: 'POST',
-        headers: {
+      method: 'POST',
+      headers: {
         'xi-api-key': process.env.ELEVENLABS_API_KEY!,
         'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      },
+      body: JSON.stringify({
         text: respuesta,
         model_id: 'eleven_multilingual_v2',
         voice_settings: { stability: 0.3, similarity_boost: 0.8, style: 0.5 }
-        })
+      })
     })
     const audioBuffer = await voiceRes.arrayBuffer()
     audioBase64 = Buffer.from(audioBuffer).toString('base64')
-    }
-
-    await supabase.from('respuestas_dios').insert({
-    pregunta,
-    respuesta,
-    audio_base64: audioBase64,
-    sesion_id: sesion.id
-    })
-
-    return NextResponse.json({ respuesta, audio: audioBase64 })
+  }
 
   await supabase.from('respuestas_dios').insert({
     pregunta,
     respuesta,
-    // audio_base64: audioBase64, // descomentar con ElevenLabs
+    audio_base64: audioBase64,
     sesion_id: sesion.id
   })
 
-  return NextResponse.json({ respuesta })
-  // con ElevenLabs: return NextResponse.json({ respuesta, audio: audioBase64 })
+  return NextResponse.json({ respuesta, audio: audioBase64 })
 }
