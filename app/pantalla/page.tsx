@@ -116,27 +116,34 @@ export default function Pantalla() {
 
       try {
         const texto = data.ultimaRespuesta.respuesta
-        window.speechSynthesis.cancel()
-        const utterance = new SpeechSynthesisUtterance(texto)
-        utterance.lang = 'es-AR'
-        utterance.rate = 0.85
-        utterance.pitch = 0.6
-        utterance.volume = 1
 
-        const keepAlive = setInterval(() => {
-          if (window.speechSynthesis.speaking) {
-            window.speechSynthesis.pause()
-            window.speechSynthesis.resume()
-          } else {
-            clearInterval(keepAlive)
-          }
-        }, 5000)
-
-        window.speechSynthesis.speak(utterance)
+        if (process.env.USE_ELEVENLABS === 'true') {
+          const res = await fetch(`/api/audio?t=${Date.now()}`)
+          const blob = await res.blob()
+          const url = URL.createObjectURL(blob)
+          const audio = new Audio(url)
+          audio.addEventListener('ended', () => URL.revokeObjectURL(url))
+          await audio.play()
+        } else {
+          window.speechSynthesis.cancel()
+          const utterance = new SpeechSynthesisUtterance(texto)
+          utterance.lang = 'es-AR'
+          utterance.rate = 0.85
+          utterance.pitch = 0.6
+          utterance.volume = 1
+          const keepAlive = setInterval(() => {
+            if (window.speechSynthesis.speaking) {
+              window.speechSynthesis.pause()
+              window.speechSynthesis.resume()
+            } else {
+              clearInterval(keepAlive)
+            }
+          }, 5000)
+          window.speechSynthesis.speak(utterance)
+        }
       } catch(e) {
         console.error('audio error', e)
       }
-    }
   }
 
   useEffect(() => {

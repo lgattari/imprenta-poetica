@@ -30,22 +30,34 @@ export async function POST(req: Request) {
 
   const respuesta = message.content[0].type === 'text' ? message.content[0].text : ''
 
-  // --- ELEVENLABS (descomentar cuando se quiera usar voz de calidad) ---
-  // const voiceRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${process.env.ELEVENLABS_VOICE_ID}`, {
-  //   method: 'POST',
-  //   headers: {
-  //     'xi-api-key': process.env.ELEVENLABS_API_KEY!,
-  //     'Content-Type': 'application/json',
-  //   },
-  //   body: JSON.stringify({
-  //     text: respuesta,
-  //     model_id: 'eleven_multilingual_v2',
-  //     voice_settings: { stability: 0.3, similarity_boost: 0.8, style: 0.5 }
-  //   })
-  // })
-  // const audioBuffer = await voiceRes.arrayBuffer()
-  // const audioBase64 = Buffer.from(audioBuffer).toString('base64')
-  // -------------------------------------------------------------------
+  const useElevenLabs = process.env.USE_ELEVENLABS === 'true'
+  let audioBase64 = null
+
+    if (useElevenLabs) {
+    const voiceRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${process.env.ELEVENLABS_VOICE_ID}`, {
+        method: 'POST',
+        headers: {
+        'xi-api-key': process.env.ELEVENLABS_API_KEY!,
+        'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+        text: respuesta,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: { stability: 0.3, similarity_boost: 0.8, style: 0.5 }
+        })
+    })
+    const audioBuffer = await voiceRes.arrayBuffer()
+    audioBase64 = Buffer.from(audioBuffer).toString('base64')
+    }
+
+    await supabase.from('respuestas_dios').insert({
+    pregunta,
+    respuesta,
+    audio_base64: audioBase64,
+    sesion_id: sesion.id
+    })
+
+    return NextResponse.json({ respuesta, audio: audioBase64 })
 
   await supabase.from('respuestas_dios').insert({
     pregunta,
