@@ -79,22 +79,36 @@ export default function Pantalla() {
       setModo('dios')
       
       if (data.monologo_despertar) {
-        setTimeout(() => {
+        setTimeout(async () => {
           window.speechSynthesis.cancel()
-          const utterance = new SpeechSynthesisUtterance(data.monologo_despertar)
-          utterance.lang = 'es-AR'
-          utterance.rate = 0.8
-          utterance.pitch = 0.5
-          utterance.volume = 1
-          const keepAlive = setInterval(() => {
-            if (window.speechSynthesis.speaking) {
-              window.speechSynthesis.pause()
-              window.speechSynthesis.resume()
-            } else {
-              clearInterval(keepAlive)
+
+          if (process.env.USE_ELEVENLABS === 'true') {
+            try {
+              const res = await fetch(`/api/despertar?t=${Date.now()}`)
+              const blob = await res.blob()
+              const url = URL.createObjectURL(blob)
+              const audio = new Audio(url)
+              audio.addEventListener('ended', () => URL.revokeObjectURL(url))
+              await audio.play()
+            } catch(e) {
+              console.error('error despertar', e)
             }
-          }, 5000)
-          window.speechSynthesis.speak(utterance)
+          } else {
+            const utterance = new SpeechSynthesisUtterance(data.monologo_despertar)
+            utterance.lang = 'es-AR'
+            utterance.rate = 0.8
+            utterance.pitch = 0.5
+            utterance.volume = 1
+            const keepAlive = setInterval(() => {
+              if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.pause()
+                window.speechSynthesis.resume()
+              } else {
+                clearInterval(keepAlive)
+              }
+            }, 5000)
+            window.speechSynthesis.speak(utterance)
+          }
         }, 2000)
       }
     } else if (data.estado === 'disolucion' && prevEstado.current !== 'disolucion' && prevEstado.current !== 'dios') {
