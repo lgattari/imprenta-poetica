@@ -51,6 +51,7 @@ export default function Pantalla() {
   const prevRespuesta = useRef<string>('')
   const audioCtxRef = useRef<AudioContext | null>(null)
   const hablandoRef = useRef(false)
+  const reproducidoRef = useRef<string>('')
 
   useEffect(() => {
     const check = setInterval(() => {
@@ -122,9 +123,11 @@ export default function Pantalla() {
     }
 
     if (data.ultimaRespuesta && data.ultimaRespuesta.respuesta !== prevRespuesta.current) {
-      if (window.speechSynthesis.speaking) return  // esperá que termine el monólogo
-      
+      if (window.speechSynthesis.speaking) return
+      if (reproducidoRef.current === data.ultimaRespuesta.respuesta) return
+
       prevRespuesta.current = data.ultimaRespuesta.respuesta
+      reproducidoRef.current = data.ultimaRespuesta.respuesta
       setUltimaPregunta(data.ultimaRespuesta.pregunta)
       setUltimaRespuesta(data.ultimaRespuesta.respuesta)
 
