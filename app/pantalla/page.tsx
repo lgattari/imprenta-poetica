@@ -84,17 +84,32 @@ export default function Pantalla() {
           window.speechSynthesis.cancel()
 
           if (process.env.USE_ELEVENLABS === 'true') {
-            try {
-              const res = await fetch(`/api/despertar?t=${Date.now()}`)
-              const blob = await res.blob()
-              const url = URL.createObjectURL(blob)
-              const audio = new Audio(url)
-              audio.addEventListener('ended', () => URL.revokeObjectURL(url))
-              await audio.play()
-            } catch(e) {
-              console.error('error despertar', e)
-            }
-          } else {
+              try {
+                const res = await fetch(`/api/despertar?t=${Date.now()}`)
+                const blob = await res.blob()
+                const url = URL.createObjectURL(blob)
+                const audio = new Audio(url)
+                
+                audio.addEventListener('play', () => {
+                  hablandoRef.current = true
+                  setHablando(true)
+                })
+                audio.addEventListener('ended', () => {
+                  hablandoRef.current = false
+                  setHablando(false)
+                  URL.revokeObjectURL(url)
+                })
+                audio.addEventListener('error', () => {
+                  hablandoRef.current = false
+                  setHablando(false)
+                  URL.revokeObjectURL(url)
+                })
+                
+                await audio.play()
+              } catch(e) {
+                console.error('error despertar', e)
+              }
+            }else {
             const utterance = new SpeechSynthesisUtterance(data.monologo_despertar)
             utterance.lang = 'es-AR'
             utterance.rate = 0.8
@@ -139,7 +154,22 @@ export default function Pantalla() {
           const blob = await res.blob()
           const url = URL.createObjectURL(blob)
           const audio = new Audio(url)
-          audio.addEventListener('ended', () => URL.revokeObjectURL(url))
+          
+          audio.addEventListener('play', () => {
+            hablandoRef.current = true
+            setHablando(true)
+          })
+          audio.addEventListener('ended', () => {
+            hablandoRef.current = false
+            setHablando(false)
+            URL.revokeObjectURL(url)
+          })
+          audio.addEventListener('error', () => {
+            hablandoRef.current = false
+            setHablando(false)
+            URL.revokeObjectURL(url)
+          })
+          
           await audio.play()
         } else {
           window.speechSynthesis.cancel()
@@ -317,7 +347,7 @@ export default function Pantalla() {
 
   draw()
   return () => cancelAnimationFrame(frame)
-}, [modo])
+}, [modo, hablando])
 
   const transiciones = ['glitch 0.6s ease-out', 'caer 0.6s cubic-bezier(.68,-0.55,.27,1.55)', 'rotar 0.6s ease-out', 'explotar 0.6s ease-out']
 

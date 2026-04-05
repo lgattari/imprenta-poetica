@@ -49,10 +49,6 @@ export default function Admin() {
     })
     const data = await res.json()
     setRespuesta(data.respuesta)
-    if (data.audio) {
-      const audio = new Audio(`data:audio/mpeg;base64,${data.audio}`)
-      audio.play()
-    }
     setPreguntaCustom('')
     setCargando(false)
   }
