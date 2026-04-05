@@ -160,6 +160,11 @@ export default function Pantalla() {
             setHablando(true)
               console.log('HABLANDO TRUE', hablandoRef.current)
           })
+
+          setTimeout(() => {
+            audio.play()
+          }, 100)
+
           audio.addEventListener('ended', () => {
             hablandoRef.current = false
             setHablando(false)
