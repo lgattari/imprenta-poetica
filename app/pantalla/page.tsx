@@ -158,6 +158,7 @@ export default function Pantalla() {
           audio.addEventListener('play', () => {
             hablandoRef.current = true
             setHablando(true)
+              console.log('HABLANDO TRUE', hablandoRef.current)
           })
           audio.addEventListener('ended', () => {
             hablandoRef.current = false
@@ -347,7 +348,7 @@ export default function Pantalla() {
 
   draw()
   return () => cancelAnimationFrame(frame)
-}, [modo, hablando])
+}, [modo])
 
   const transiciones = ['glitch 0.6s ease-out', 'caer 0.6s cubic-bezier(.68,-0.55,.27,1.55)', 'rotar 0.6s ease-out', 'explotar 0.6s ease-out']
 
