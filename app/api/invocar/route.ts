@@ -25,7 +25,7 @@ export async function POST() {
     max_tokens: 500,
     messages: [{
       role: 'user',
-      content: `A partir de estas características dadas por el público, generá una descripción interna de una entidad divina caótica. Esta descripción se usará como personalidad base para que la entidad interactúe con humanos. Sé conciso, extraño, y perturbador.
+      content: `A partir de estas características dadas por el público, generá una descripción interna de una entidad divina mujer caótica. Esta descripción se usará como personalidad base para que la entidad interactúe con humanos. Sé conciso, extraño, y perturbador.
 
 Características:
 ${caracteristicas}
