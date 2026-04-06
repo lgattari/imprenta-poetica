@@ -368,9 +368,9 @@ export default function Pantalla() {
 
     // ecualizador cuando habla
     if (hablandoRef.current) {
-      const bars = 64
-      const barW = W / bars
-      const centerY = H / 2
+      const bars = 32
+      const centerX = W / 2
+      const centerY = H * 0.72
       const analyser = analyserRef.current
       const data = dataArrayRef.current
 
@@ -379,12 +379,17 @@ export default function Pantalla() {
         for (let i = 0; i < bars; i++) {
           const idx = Math.floor(i * data.length / bars)
           const value = data[idx] ?? 0
-          const barH = (value / 255) * (H * 0.45) + 10
-          const x = i * barW
-          const alpha = 0.35 + (value / 255) * 0.65
+          const angle = Math.PI - (i / (bars - 1)) * Math.PI
+          const radius = H * 0.12 + (value / 255) * (H * 0.28)
+          const thickness = H * 0.03
+          const hue = 200 - (i / bars) * 120 + (value / 255) * 30
+          const alpha = 0.5 + (value / 255) * 0.5
 
-          ctx.fillStyle = `rgba(255,255,255,${alpha})`
-          ctx.fillRect(x, centerY - barH / 2, barW - 1, barH)
+          ctx.strokeStyle = `hsla(${hue}, 100%, 78%, ${alpha})`
+          ctx.lineWidth = thickness
+          ctx.beginPath()
+          ctx.arc(centerX, centerY, radius, angle - 0.06, angle + 0.06)
+          ctx.stroke()
         }
       } else {
         for (let i = 0; i < bars; i++) {
@@ -393,12 +398,16 @@ export default function Pantalla() {
             + Math.sin(t * 0.31 + i * 0.2) * 0.2
             + (Math.random() - 0.5) * 0.3
 
-          const barH = Math.abs(freq) * 180 + 10
-          const x = i * barW
-          const alpha = 0.7 + Math.abs(freq) * 0.3
+          const radius = H * 0.12 + Math.abs(freq) * (H * 0.28)
+          const angle = Math.PI - (i / (bars - 1)) * Math.PI
+          const thickness = H * 0.03
+          const alpha = 0.6 + Math.abs(freq) * 0.4
 
-          ctx.fillStyle = `rgba(255,255,255,${alpha})`
-          ctx.fillRect(x, centerY - barH / 2, barW - 1, barH)
+          ctx.strokeStyle = `rgba(255,255,255,${alpha})`
+          ctx.lineWidth = thickness
+          ctx.beginPath()
+          ctx.arc(centerX, centerY, radius, angle - 0.06, angle + 0.06)
+          ctx.stroke()
         }
       }
 
