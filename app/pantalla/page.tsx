@@ -50,12 +50,17 @@ export default function Pantalla() {
   const prevEstado = useRef<string>('')
   const prevRespuesta = useRef<string>('')
   const audioCtxRef = useRef<AudioContext | null>(null)
+  const talkingAudioRef = useRef<HTMLAudioElement | null>(null)
   const hablandoRef = useRef(false)
   const reproducidoRef = useRef<string>('')
 
   useEffect(() => {
     const check = setInterval(() => {
-      const speaking = window.speechSynthesis.speaking
+      const audioSpeaking = talkingAudioRef.current
+        ? !talkingAudioRef.current.paused && !talkingAudioRef.current.ended
+        : false
+      const speaking = window.speechSynthesis.speaking || audioSpeaking
+
       if (speaking !== hablandoRef.current) {
         hablandoRef.current = speaking
         setHablando(speaking)
@@ -89,7 +94,8 @@ export default function Pantalla() {
                 const blob = await res.blob()
                 const url = URL.createObjectURL(blob)
                 const audio = new Audio(url)
-                
+                talkingAudioRef.current = audio
+
                 audio.addEventListener('play', () => {
                   hablandoRef.current = true
                   setHablando(true)
@@ -97,14 +103,16 @@ export default function Pantalla() {
                 audio.addEventListener('ended', () => {
                   hablandoRef.current = false
                   setHablando(false)
+                  talkingAudioRef.current = null
                   URL.revokeObjectURL(url)
                 })
                 audio.addEventListener('error', () => {
                   hablandoRef.current = false
                   setHablando(false)
+                  talkingAudioRef.current = null
                   URL.revokeObjectURL(url)
                 })
-                
+
                 await audio.play()
               } catch(e) {
                 console.error('error despertar', e)
@@ -154,28 +162,27 @@ export default function Pantalla() {
           const blob = await res.blob()
           const url = URL.createObjectURL(blob)
           const audio = new Audio(url)
-          
+          talkingAudioRef.current = audio
+
           audio.addEventListener('play', () => {
             hablandoRef.current = true
             setHablando(true)
-              console.log('HABLANDO TRUE', hablandoRef.current)
+            console.log('HABLANDO TRUE', hablandoRef.current)
           })
-
-          setTimeout(() => {
-            audio.play()
-          }, 100)
 
           audio.addEventListener('ended', () => {
             hablandoRef.current = false
             setHablando(false)
+            talkingAudioRef.current = null
             URL.revokeObjectURL(url)
           })
           audio.addEventListener('error', () => {
             hablandoRef.current = false
             setHablando(false)
+            talkingAudioRef.current = null
             URL.revokeObjectURL(url)
           })
-          
+
           await audio.play()
         } else {
           window.speechSynthesis.cancel()
