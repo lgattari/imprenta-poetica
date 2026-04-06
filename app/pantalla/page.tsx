@@ -104,6 +104,8 @@ export default function Pantalla() {
     analyser.fftSize = 128
 
     source.connect(analyser)
+    source.connect(ctx.destination)
+    analyser.connect(ctx.destination)
 
     sourceNodeRef.current = source
     analyserRef.current = analyser
