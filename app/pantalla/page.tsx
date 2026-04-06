@@ -96,14 +96,14 @@ export default function Pantalla() {
     if (!ctx) return
 
     cleanupAudioAnalyser()
-    audio.muted = true
+    audio.muted = false
+    audio.volume = 1
 
     const source = ctx.createMediaElementSource(audio)
     const analyser = ctx.createAnalyser()
     analyser.fftSize = 128
 
     source.connect(analyser)
-    analyser.connect(ctx.destination)
 
     sourceNodeRef.current = source
     analyserRef.current = analyser
