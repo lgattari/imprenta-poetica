@@ -53,7 +53,7 @@ export default function Pantalla() {
   const talkingAudioRef = useRef<HTMLAudioElement | null>(null)
   const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
-  const dataArrayRef = useRef<Uint8Array | null>(null)
+  const dataArrayRef = useRef<Uint8Array<ArrayBuffer> | null>(null)
   const hablandoRef = useRef(false)
   const reproducidoRef = useRef<string>('')
 
