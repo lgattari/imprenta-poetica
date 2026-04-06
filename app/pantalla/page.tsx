@@ -51,6 +51,9 @@ export default function Pantalla() {
   const prevRespuesta = useRef<string>('')
   const audioCtxRef = useRef<AudioContext | null>(null)
   const talkingAudioRef = useRef<HTMLAudioElement | null>(null)
+  const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null)
+  const analyserRef = useRef<AnalyserNode | null>(null)
+  const dataArrayRef = useRef<Uint8Array | null>(null)
   const hablandoRef = useRef(false)
   const reproducidoRef = useRef<string>('')
 
@@ -76,6 +79,37 @@ export default function Pantalla() {
     setAudioActivo(true)
   }
 
+  function cleanupAudioAnalyser() {
+    if (sourceNodeRef.current) {
+      sourceNodeRef.current.disconnect()
+      sourceNodeRef.current = null
+    }
+    if (analyserRef.current) {
+      analyserRef.current.disconnect()
+      analyserRef.current = null
+      dataArrayRef.current = null
+    }
+  }
+
+  function setupAudioAnalyser(audio: HTMLAudioElement) {
+    const ctx = audioCtxRef.current
+    if (!ctx) return
+
+    cleanupAudioAnalyser()
+    audio.muted = true
+
+    const source = ctx.createMediaElementSource(audio)
+    const analyser = ctx.createAnalyser()
+    analyser.fftSize = 128
+
+    source.connect(analyser)
+    analyser.connect(ctx.destination)
+
+    sourceNodeRef.current = source
+    analyserRef.current = analyser
+    dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount)
+  }
+
   async function cargar() {
   const res = await fetch('/api/estado')
   const data = await res.json()
@@ -95,6 +129,7 @@ export default function Pantalla() {
                 const url = URL.createObjectURL(blob)
                 const audio = new Audio(url)
                 talkingAudioRef.current = audio
+                setupAudioAnalyser(audio)
 
                 audio.addEventListener('play', () => {
                   hablandoRef.current = true
@@ -104,12 +139,14 @@ export default function Pantalla() {
                   hablandoRef.current = false
                   setHablando(false)
                   talkingAudioRef.current = null
+                  cleanupAudioAnalyser()
                   URL.revokeObjectURL(url)
                 })
                 audio.addEventListener('error', () => {
                   hablandoRef.current = false
                   setHablando(false)
                   talkingAudioRef.current = null
+                  cleanupAudioAnalyser()
                   URL.revokeObjectURL(url)
                 })
 
@@ -163,6 +200,7 @@ export default function Pantalla() {
           const url = URL.createObjectURL(blob)
           const audio = new Audio(url)
           talkingAudioRef.current = audio
+          setupAudioAnalyser(audio)
 
           audio.addEventListener('play', () => {
             hablandoRef.current = true
@@ -174,12 +212,14 @@ export default function Pantalla() {
             hablandoRef.current = false
             setHablando(false)
             talkingAudioRef.current = null
+            cleanupAudioAnalyser()
             URL.revokeObjectURL(url)
           })
           audio.addEventListener('error', () => {
             hablandoRef.current = false
             setHablando(false)
             talkingAudioRef.current = null
+            cleanupAudioAnalyser()
             URL.revokeObjectURL(url)
           })
 
@@ -329,23 +369,40 @@ export default function Pantalla() {
       const bars = 64
       const barW = W / bars
       const centerY = H / 2
+      const analyser = analyserRef.current
+      const data = dataArrayRef.current
 
-      for (let i = 0; i < bars; i++) {
-        const freq = Math.sin(t * 0.15 + i * 0.4) * 0.5
-          + Math.sin(t * 0.23 + i * 0.7) * 0.3
-          + Math.sin(t * 0.31 + i * 0.2) * 0.2
-          + (Math.random() - 0.5) * 0.3
+      if (analyser && data) {
+        analyser.getByteFrequencyData(data)
+        for (let i = 0; i < bars; i++) {
+          const idx = Math.floor(i * data.length / bars)
+          const value = data[idx] ?? 0
+          const barH = (value / 255) * (H * 0.45) + 10
+          const x = i * barW
+          const alpha = 0.35 + (value / 255) * 0.65
 
-        const barH = Math.abs(freq) * 180 + 10
-        const x = i * barW
-        const alpha = 0.7 + Math.abs(freq) * 0.3
+          ctx.fillStyle = `rgba(255,255,255,${alpha})`
+          ctx.fillRect(x, centerY - barH / 2, barW - 1, barH)
+        }
+      } else {
+        for (let i = 0; i < bars; i++) {
+          const freq = Math.sin(t * 0.15 + i * 0.4) * 0.5
+            + Math.sin(t * 0.23 + i * 0.7) * 0.3
+            + Math.sin(t * 0.31 + i * 0.2) * 0.2
+            + (Math.random() - 0.5) * 0.3
 
-        ctx.fillStyle = `rgba(255,255,255,${alpha})`
-        ctx.fillRect(x, centerY - barH / 2, barW - 1, barH)
+          const barH = Math.abs(freq) * 180 + 10
+          const x = i * barW
+          const alpha = 0.7 + Math.abs(freq) * 0.3
+
+          ctx.fillStyle = `rgba(255,255,255,${alpha})`
+          ctx.fillRect(x, centerY - barH / 2, barW - 1, barH)
+        }
       }
 
-      // pulso de luz cuando habla
-      const pulse = Math.abs(Math.sin(t * 0.18)) * 0.08
+      const pulse = analyser && data
+        ? Math.max(...data) / 255 * 0.15
+        : Math.abs(Math.sin(t * 0.18)) * 0.08
       ctx.fillStyle = `rgba(255,255,255,${pulse})`
       ctx.fillRect(0, 0, W, H)
     } else {
