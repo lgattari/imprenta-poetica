@@ -30,23 +30,49 @@ function FraseEspera({ frases }: { frases: string[] }) {
       setTimeout(() => {
         setFrase(frases[Math.floor(Math.random() * frases.length)])
         setVisible(true)
-      }, 500)
-    }, 3000)
+      }, 400)
+    }, 4000)
     return () => clearInterval(interval)
-  }, [])
+  }, [frases])
 
   return (
-    <p style={{
-      color: 'rgba(255,255,255,0.6)',
-      fontSize: '1.5rem',
-      fontWeight: 300,
-      letterSpacing: '0.05em',
-      opacity: visible ? 1 : 0,
-      transition: 'opacity 0.5s ease',
-      fontStyle: 'italic',
+    <div style={{
+      textAlign: 'center',
     }}>
-      {frase}
-    </p>
+      <p style={{
+        color: 'rgba(200,150,255,0.9)',
+        fontSize: '2.5rem',
+        fontWeight: 300,
+        letterSpacing: '0.08em',
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 0.4s ease',
+        margin: 0,
+        fontStyle: 'italic',
+        lineHeight: 1.4,
+      }}>
+        {frase}
+      </p>
+      <div style={{
+        marginTop: '1.5rem',
+        display: 'flex',
+        gap: '8px',
+        justifyContent: 'center',
+      }}>
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: 'rgba(200,150,255,0.6)',
+              animation: `pulse ${1 + i * 0.2}s infinite`,
+              animationDelay: `${i * 0.15}s`,
+            }}
+          />
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -419,10 +445,10 @@ export default function Pantalla() {
 
     // ecualizador cuando habla
     if (hablandoRef.current) {
-      const bars = 64
-      const totalWidth = W * 0.8
+      const bars = 128
+      const totalWidth = W
       const barW = totalWidth / bars
-      const offsetX = (W - totalWidth) / 2
+      const offsetX = 0
       const centerY = H / 2
       const analyser = analyserRef.current
       const data = dataArrayRef.current
@@ -432,12 +458,20 @@ export default function Pantalla() {
         for (let i = 0; i < bars; i++) {
           const idx = Math.floor(i * data.length / bars)
           const value = data[idx] ?? 0
-          const barH = (value / 255) * (H * 0.45) + 10
+          const barH = (value / 255) * (H * 0.5) + 5
           const x = offsetX + i * barW
-          const alpha = 0.35 + (value / 255) * 0.65
+          const alpha = 0.4 + (value / 255) * 0.6
+          const hue = 280 + (i / bars) * 100
+          const saturation = 80 + (value / 255) * 20
 
-          ctx.fillStyle = `rgba(255,255,255,${alpha})`
-          ctx.fillRect(x, centerY - barH / 2, barW * 0.9, barH)
+          ctx.fillStyle = `hsla(${hue}, ${saturation}%, 65%, ${alpha})`
+          ctx.fillRect(x, centerY - barH / 2, barW - 0.5, barH)
+          
+          ctx.shadowColor = `hsla(${hue}, 100%, 65%, 0.8)`
+          ctx.shadowBlur = 12
+          ctx.fillStyle = `hsla(${hue}, 100%, 80%, ${alpha * 0.6})`
+          ctx.fillRect(x, centerY - barH / 2, barW - 0.5, barH * 0.3)
+          ctx.shadowBlur = 0
         }
       } else {
         for (let i = 0; i < bars; i++) {
@@ -446,19 +480,20 @@ export default function Pantalla() {
             + Math.sin(t * 0.31 + i * 0.2) * 0.2
             + (Math.random() - 0.5) * 0.3
 
-          const barH = Math.abs(freq) * 180 + 10
+          const barH = Math.abs(freq) * 200 + 5
           const x = offsetX + i * barW
-          const alpha = 0.7 + Math.abs(freq) * 0.3
+          const alpha = 0.6 + Math.abs(freq) * 0.4
+          const hue = 280 + (i / bars) * 100
 
-          ctx.fillStyle = `rgba(255,255,255,${alpha})`
-          ctx.fillRect(x, centerY - barH / 2, barW * 0.9, barH)
+          ctx.fillStyle = `hsla(${hue}, 80%, 65%, ${alpha})`
+          ctx.fillRect(x, centerY - barH / 2, barW - 0.5, barH)
         }
       }
 
       const pulse = analyser && data
-        ? Math.max(...data) / 255 * 0.15
-        : Math.abs(Math.sin(t * 0.18)) * 0.08
-      ctx.fillStyle = `rgba(255,255,255,${pulse})`
+        ? Math.max(...data) / 255 * 0.2
+        : Math.abs(Math.sin(t * 0.18)) * 0.1
+      ctx.fillStyle = `rgba(200,150,255,${pulse})`
       ctx.fillRect(0, 0, W, H)
     } else {
       // línea plana cuando no habla
@@ -506,14 +541,26 @@ export default function Pantalla() {
       {procesando && (
         <div style={{
           position: 'fixed',
-          bottom: '10vh',
+          top: 0,
           left: 0,
           right: 0,
-          textAlign: 'center',
-          zIndex: 10,
-          animation: 'fadein 0.5s ease-out',
+          bottom: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 5,
+          pointerEvents: 'none',
         }}>
-          <FraseEspera frases={frasesEspera} />
+          <div style={{
+            textAlign: 'center',
+            padding: '2rem',
+            backdropFilter: 'blur(4px)',
+            borderRadius: '12px',
+            border: '1px solid rgba(200,150,255,0.3)',
+            boxShadow: '0 0 40px rgba(200,150,255,0.1)',
+          }}>
+            <FraseEspera frases={frasesEspera} />
+          </div>
         </div>
       )}
       <style>{estilos}</style>
