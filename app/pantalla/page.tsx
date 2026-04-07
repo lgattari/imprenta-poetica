@@ -20,6 +20,36 @@ function golpeIndustrial(ctx: AudioContext) {
   source.start()
 }
 
+function FraseEspera({ frases }: { frases: string[] }) {
+  const [frase, setFrase] = useState(frases[Math.floor(Math.random() * frases.length)])
+  const [visible, setVisible] = useState(true)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisible(false)
+      setTimeout(() => {
+        setFrase(frases[Math.floor(Math.random() * frases.length)])
+        setVisible(true)
+      }, 500)
+    }, 3000)
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <p style={{
+      color: 'rgba(255,255,255,0.6)',
+      fontSize: '1.5rem',
+      fontWeight: 300,
+      letterSpacing: '0.05em',
+      opacity: visible ? 1 : 0,
+      transition: 'opacity 0.5s ease',
+      fontStyle: 'italic',
+    }}>
+      {frase}
+    </p>
+  )
+}
+
 type Modo = 'caracteristicas' | 'contador' | 'disolucion' | 'dios'
 
 interface Flotante {
