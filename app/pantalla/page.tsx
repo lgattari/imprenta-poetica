@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
+import { supabase } from '../../lib/supabase'
 
 function golpeIndustrial(ctx: AudioContext) {
   const buf = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate)
@@ -21,10 +22,11 @@ function golpeIndustrial(ctx: AudioContext) {
 }
 
 function FraseEspera({ frases }: { frases: string[] }) {
-  const [frase, setFrase] = useState(frases[Math.floor(Math.random() * frases.length)])
+  const [frase, setFrase] = useState(frases.length > 0 ? frases[Math.floor(Math.random() * frases.length)] : 'Pensando...')
   const [visible, setVisible] = useState(true)
 
   useEffect(() => {
+    if (frases.length === 0) return
     const interval = setInterval(() => {
       setVisible(false)
       setTimeout(() => {
@@ -113,23 +115,16 @@ export default function Pantalla() {
   const hablandoRef = useRef(false)
   const reproducidoRef = useRef<string>('')
   const [procesando, setProcesando] = useState(false)
-  const frasesEspera = [
-    "¿Esto sos vos?",
-    "¿Estás seguro de eso?",
-    "¿Por qué existís?",
-    "Podrías ser otra cosa.",
-    "¿Qué es lo real?",
-    "¿Quién te dio permiso de preguntar?",
-    "Eso que sentís tiene un nombre.",
-    "¿Lo querés saber?",
-    "Todos los demás también sienten esto.",
-    "No sos tan especial.",
-    "Tampoco tan ordinario.",
-    "¿Qué pasaría si la respuesta te cambia?",
-    "Ya sé lo que necesitás escuchar.",
-    "No es lo mismo que lo que querés.",
-    "Felicitaciones.",
-  ]
+  const [frasesEspera, setFrasesEspera] = useState<string[]>([])
+  useEffect(() => {
+    const fetchFrases = async () => {
+      const { data, error } = await supabase.from('frases_espera').select('frase')
+      if (data && !error) {
+        setFrasesEspera(data.map(item => item.frase))
+      }
+    }
+    fetchFrases()
+  }, [])
   useEffect(() => {
     const check = setInterval(() => {
       const audioSpeaking = talkingAudioRef.current
