@@ -118,9 +118,9 @@ export default function Pantalla() {
   const [frasesEspera, setFrasesEspera] = useState<string[]>([])
   useEffect(() => {
     const fetchFrases = async () => {
-      const { data, error } = await supabase.from('frases_espera').select('frase')
+      const { data, error } = await supabase.from('frases_espera').select('texto')
       if (data && !error) {
-        setFrasesEspera(data.map(item => item.frase))
+        setFrasesEspera(data.map(item => item.texto))
       }
     }
     fetchFrases()
