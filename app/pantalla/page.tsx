@@ -533,7 +533,7 @@ export default function Pantalla() {
         height={window.innerHeight}
         style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh' }}
       />
-      {procesando && (
+      {!hablando && (
         <div style={{
           position: 'fixed',
           top: 0,
