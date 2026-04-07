@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 export async function GET() {
   const { data: sesion } = await supabase
     .from('sesiones')
-    .select('id, estado, monologo_despertar')
+    .select('id, estado, monologo_despertar, procesando')
     .eq('activa', true)
     .single()
 
@@ -29,7 +29,8 @@ export async function GET() {
     estado: 'dios',
     respuestas: respuestas?.map(r => r.contenido) ?? [],
     ultimaRespuesta: ultimaRespuesta ?? null,
-    monologo_despertar: sesion.monologo_despertar ?? null
+    monologo_despertar: sesion.monologo_despertar ?? null,
+    procesando: sesion.procesando ?? false
   })
 }
 

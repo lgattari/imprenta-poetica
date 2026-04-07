@@ -56,7 +56,24 @@ export default function Pantalla() {
   const dataArrayRef = useRef<Uint8Array<ArrayBuffer> | null>(null)
   const hablandoRef = useRef(false)
   const reproducidoRef = useRef<string>('')
-
+  const [procesando, setProcesando] = useState(false)
+  const frasesEspera = [
+    "¿Esto sos vos?",
+    "¿Estás seguro de eso?",
+    "¿Por qué existís?",
+    "Podrías ser otra cosa.",
+    "¿Qué es lo real?",
+    "¿Quién te dio permiso de preguntar?",
+    "Eso que sentís tiene un nombre.",
+    "¿Lo querés saber?",
+    "Todos los demás también sienten esto.",
+    "No sos tan especial.",
+    "Tampoco tan ordinario.",
+    "¿Qué pasaría si la respuesta te cambia?",
+    "Ya sé lo que necesitás escuchar.",
+    "No es lo mismo que lo que querés.",
+    "Felicitaciones.",
+  ]
   useEffect(() => {
     const check = setInterval(() => {
       const audioSpeaking = talkingAudioRef.current
@@ -115,6 +132,10 @@ export default function Pantalla() {
   async function cargar() {
   const res = await fetch('/api/estado')
   const data = await res.json()
+
+  if (data.estado === 'dios') {
+    setProcesando(data.procesando ?? false)
+  }
 
   if (data.estado === 'dios' && prevEstado.current !== 'dios') {
       prevEstado.current = 'dios'
@@ -368,9 +389,11 @@ export default function Pantalla() {
 
     // ecualizador cuando habla
     if (hablandoRef.current) {
-      const bars = 32
-      const centerX = W / 2
-      const centerY = H * 0.72
+      const bars = 64
+      const totalWidth = W * 0.8
+      const barW = totalWidth / bars
+      const offsetX = (W - totalWidth) / 2
+      const centerY = H / 2
       const analyser = analyserRef.current
       const data = dataArrayRef.current
 
@@ -379,17 +402,12 @@ export default function Pantalla() {
         for (let i = 0; i < bars; i++) {
           const idx = Math.floor(i * data.length / bars)
           const value = data[idx] ?? 0
-          const angle = Math.PI - (i / (bars - 1)) * Math.PI
-          const radius = H * 0.12 + (value / 255) * (H * 0.28)
-          const thickness = H * 0.03
-          const hue = 200 - (i / bars) * 120 + (value / 255) * 30
-          const alpha = 0.5 + (value / 255) * 0.5
+          const barH = (value / 255) * (H * 0.45) + 10
+          const x = offsetX + i * barW
+          const alpha = 0.35 + (value / 255) * 0.65
 
-          ctx.strokeStyle = `hsla(${hue}, 100%, 78%, ${alpha})`
-          ctx.lineWidth = thickness
-          ctx.beginPath()
-          ctx.arc(centerX, centerY, radius, angle - 0.06, angle + 0.06)
-          ctx.stroke()
+          ctx.fillStyle = `rgba(255,255,255,${alpha})`
+          ctx.fillRect(x, centerY - barH / 2, barW * 0.9, barH)
         }
       } else {
         for (let i = 0; i < bars; i++) {
@@ -398,16 +416,12 @@ export default function Pantalla() {
             + Math.sin(t * 0.31 + i * 0.2) * 0.2
             + (Math.random() - 0.5) * 0.3
 
-          const radius = H * 0.12 + Math.abs(freq) * (H * 0.28)
-          const angle = Math.PI - (i / (bars - 1)) * Math.PI
-          const thickness = H * 0.03
-          const alpha = 0.6 + Math.abs(freq) * 0.4
+          const barH = Math.abs(freq) * 180 + 10
+          const x = offsetX + i * barW
+          const alpha = 0.7 + Math.abs(freq) * 0.3
 
-          ctx.strokeStyle = `rgba(255,255,255,${alpha})`
-          ctx.lineWidth = thickness
-          ctx.beginPath()
-          ctx.arc(centerX, centerY, radius, angle - 0.06, angle + 0.06)
-          ctx.stroke()
+          ctx.fillStyle = `rgba(255,255,255,${alpha})`
+          ctx.fillRect(x, centerY - barH / 2, barW * 0.9, barH)
         }
       }
 
@@ -453,12 +467,25 @@ export default function Pantalla() {
 
   if (modo === 'dios') return (
     <main className="min-h-screen bg-black flex flex-col items-center justify-center p-8 gap-6">
-     <canvas
+      <canvas
         ref={canvasRef}
         width={window.innerWidth}
         height={window.innerHeight}
         style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh' }}
       />
+      {procesando && (
+        <div style={{
+          position: 'fixed',
+          bottom: '10vh',
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          zIndex: 10,
+          animation: 'fadein 0.5s ease-out',
+        }}>
+          <FraseEspera frases={frasesEspera} />
+        </div>
+      )}
       <style>{estilos}</style>
     </main>
   )

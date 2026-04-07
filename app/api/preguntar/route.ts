@@ -6,6 +6,11 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 export async function POST(req: Request) {
   const { pregunta } = await req.json()
+ 
+  await supabase
+    .from('sesiones')
+    .update({ procesando: true })
+    .eq('activa', true)
 
   const { data: sesion } = await supabase
     .from('sesiones')
@@ -56,6 +61,11 @@ Respondé como esta entidad. Podés ser cruel, tierno, caótico, impredecible. H
     audio_base64: audioBase64,
     sesion_id: sesion.id
   })
+
+  await supabase
+    .from('sesiones')
+    .update({ procesando: false })
+    .eq('activa', true)
 
   return NextResponse.json({ respuesta, audio: audioBase64 })
 }
