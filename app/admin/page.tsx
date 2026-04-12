@@ -55,7 +55,6 @@ export default function Admin() {
       const texto = event.results[0][0].transcript
       setPreguntaCustom(texto)
       setEscuchando(false)
-      preguntar(texto)
     }
 
     recognition.onerror = () => setEscuchando(false)

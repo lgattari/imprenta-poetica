@@ -116,15 +116,16 @@ export default function Pantalla() {
   const reproducidoRef = useRef<string>('')
   const [procesando, setProcesando] = useState(false)
   const [frasesEspera, setFrasesEspera] = useState<string[]>([])
-  useEffect(() => {
-    const fetchFrases = async () => {
-      const { data, error } = await supabase.from('frases_espera').select('texto')
-      if (data && !error) {
-        setFrasesEspera(data.map(item => item.texto))
-      }
-    }
-    fetchFrases()
-  }, [])
+  // Desactivado: frases en espera
+  // useEffect(() => {
+  //   const fetchFrases = async () => {
+  //     const { data, error } = await supabase.from('frases_espera').select('texto')
+  //     if (data && !error) {
+  //       setFrasesEspera(data.map(item => item.texto))
+  //     }
+  //   }
+  //   fetchFrases()
+  // }, [])
   useEffect(() => {
     const check = setInterval(() => {
       const audioSpeaking = talkingAudioRef.current
@@ -443,7 +444,8 @@ export default function Pantalla() {
       const bars = 128
       const totalWidth = W
       const barW = totalWidth / bars
-      const offsetX = 0
+      const totalBarsWidth = bars * barW
+      const offsetX = (W - totalBarsWidth) / 2
       const centerY = H / 2
       const analyser = analyserRef.current
       const data = dataArrayRef.current
@@ -533,7 +535,8 @@ export default function Pantalla() {
         height={window.innerHeight}
         style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh' }}
       />
-      {!hablando && (
+       {/* Desactivado: frases en espera */}
+      {/* {!hablando && (
         <div style={{
           position: 'fixed',
           top: 0,
@@ -557,7 +560,8 @@ export default function Pantalla() {
             <FraseEspera frases={frasesEspera} />
           </div>
         </div>
-      )}
+      )} */
+      }
       <style>{estilos}</style>
     </main>
   )
@@ -596,21 +600,186 @@ export default function Pantalla() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-16 overflow-hidden">
-      <p className="text-white/20 text-xs tracking-widest uppercase mb-16">
-        {caracteristicas.length} {caracteristicas.length === 1 ? 'característica' : 'características'} recibidas
-      </p>
-      {caracteristicas.length === 0 ? (
-        <p className="text-white/20 text-2xl">esperando ofrendas...</p>
-      ) : (
-        <p className="text-4xl font-light text-center max-w-2xl leading-relaxed" style={{
-          opacity: visible ? 1 : 0,
-          animation: visible ? transiciones[actual % transiciones.length] : 'none',
-          transition: visible ? 'none' : 'opacity 0.4s ease',
+    <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-8 overflow-hidden relative">
+      {/* Fondo con gradiente radial sutil */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'radial-gradient(circle at 50% 50%, rgba(200,150,255,0.05) 0%, rgba(0,0,0,1) 70%)',
+        pointerEvents: 'none',
+      }} />
+
+      {/* Contenedor principal */}
+      <div style={{
+        position: 'relative',
+        zIndex: 10,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        height: '100%',
+      }}>
+        {/* Header */}
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '3rem',
+          animation: 'fadein 1s ease-out',
         }}>
-          {caracteristicas[actual]}
-        </p>
-      )}
+          <p style={{
+            fontSize: '0.75rem',
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            color: 'rgba(200,150,255,0.6)',
+            margin: 0,
+            marginBottom: '0.5rem',
+            fontWeight: 400,
+          }}>
+            {caracteristicas.length} {caracteristicas.length === 1 ? 'ofrenda' : 'ofrendas'} recibidas
+          </p>
+          <div style={{
+            height: '2px',
+            width: '60px',
+            background: 'linear-gradient(90deg, transparent, rgba(200,150,255,0.8), transparent)',
+            margin: '0 auto',
+          }} />
+        </div>
+
+        {/* Contenido principal */}
+        {caracteristicas.length === 0 ? (
+          <div style={{
+            textAlign: 'center',
+            animation: 'pulse 2s ease-in-out infinite',
+          }}>
+            <p style={{
+              fontSize: '1.5rem',
+              color: 'rgba(200,150,255,0.4)',
+              fontStyle: 'italic',
+              letterSpacing: '0.05em',
+              margin: 0,
+              fontWeight: 300,
+            }}>
+              esperando ofrendas...
+            </p>
+          </div>
+        ) : (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '2rem',
+            maxWidth: '90vw',
+          }}>
+            {/* Características principales */}
+            <div style={{
+              position: 'relative',
+              minHeight: '200px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '100%',
+            }}>
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'radial-gradient(circle, rgba(200,150,255,0.1) 0%, transparent 70%)',
+                borderRadius: '50%',
+                opacity: visible ? 1 : 0,
+                transition: 'opacity 0.4s ease',
+              }} />
+              <p style={{
+                fontSize: 'clamp(2rem, 8vw, 4.5rem)',
+                fontWeight: 300,
+                textAlign: 'center',
+                maxWidth: '85vw',
+                lineHeight: 1.3,
+                color: 'rgba(200,150,255,0.95)',
+                opacity: visible ? 1 : 0,
+                animation: visible ? transiciones[actual % transiciones.length] : 'none',
+                transition: visible ? 'none' : 'opacity 0.4s ease',
+                textShadow: '0 0 20px rgba(200,150,255,0.3)',
+                letterSpacing: '0.02em',
+              }}>
+                {caracteristicas[actual]}
+              </p>
+            </div>
+
+            {/* Indicador de progreso */}
+            <div style={{
+              display: 'flex',
+              gap: '0.5rem',
+              justifyContent: 'center',
+              margin: '1rem 0',
+            }}>
+              {caracteristicas.map((_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    height: '6px',
+                    width: i === actual ? '24px' : '6px',
+                    borderRadius: '3px',
+                    background: i === actual 
+                      ? 'rgba(200,150,255,0.9)' 
+                      : 'rgba(200,150,255,0.3)',
+                    transition: 'all 0.3s ease',
+                    boxShadow: i === actual ? '0 0 12px rgba(200,150,255,0.6)' : 'none',
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Info de reproducción */}
+            {hablando && (
+              <div style={{
+                position: 'relative',
+                padding: '1rem 2rem',
+                borderRadius: '12px',
+                border: '1px solid rgba(200,150,255,0.4)',
+                background: 'rgba(200,150,255,0.08)',
+                backdropFilter: 'blur(4px)',
+                animation: 'fadein 0.6s ease-out',
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.8rem',
+                  justifyContent: 'center',
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    gap: '3px',
+                  }}>
+                    {[0, 1, 2].map((i) => (
+                      <div
+                        key={i}
+                        style={{
+                          width: '3px',
+                          height: '12px',
+                          borderRadius: '2px',
+                          background: 'rgba(200,150,255,0.8)',
+                          animation: `pulse ${0.8 + i * 0.1}s ease-in-out infinite`,
+                          animationDelay: `${i * 0.1}s`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <span style={{
+                    fontSize: '0.85rem',
+                    color: 'rgba(200,150,255,0.8)',
+                    letterSpacing: '0.05em',
+                  }}>
+                    reproduciendo...
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       <style>{estilos}</style>
     </main>
   )
