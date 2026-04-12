@@ -7,6 +7,27 @@ interface Pregunta {
   respondida: boolean
 }
 
+declare global {
+  interface Window {
+    SpeechRecognition: new () => SpeechRecognition
+    webkitSpeechRecognition: new () => SpeechRecognition
+  }
+  interface SpeechRecognition extends EventTarget {
+    lang: string
+    continuous: boolean
+    interimResults: boolean
+    start(): void
+    stop(): void
+    onstart: (() => void) | null
+    onend: (() => void) | null
+    onerror: (() => void) | null
+    onresult: ((event: SpeechRecognitionEvent) => void) | null
+  }
+  interface SpeechRecognitionEvent extends Event {
+    results: SpeechRecognitionResultList
+  }
+}
+
 export default function Admin() {
   const [caracteristicas, setCaracteristicas] = useState<number>(0)
   const [preguntas, setPreguntas] = useState<Pregunta[]>([])
@@ -14,7 +35,34 @@ export default function Admin() {
   const [preguntaCustom, setPreguntaCustom] = useState('')
   const [cargando, setCargando] = useState(false)
   const [respuesta, setRespuesta] = useState('')
+  const [escuchando, setEscuchando] = useState(false)
 
+  function escucharPregunta() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      alert('Tu navegador no soporta reconocimiento de voz')
+      return
+    }
+
+    const recognition = new SpeechRecognition()
+    recognition.lang = 'es-AR'
+    recognition.continuous = false
+    recognition.interimResults = false
+
+    recognition.onstart = () => setEscuchando(true)
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const texto = event.results[0][0].transcript
+      setPreguntaCustom(texto)
+      setEscuchando(false)
+      preguntar(texto)
+    }
+
+    recognition.onerror = () => setEscuchando(false)
+    recognition.onend = () => setEscuchando(false)
+
+    recognition.start()
+  }
   async function cargarEstado() {
     const res = await fetch('/api/estado')
     const data = await res.json()
@@ -94,6 +142,13 @@ export default function Admin() {
               value={preguntaCustom}
               onChange={e => setPreguntaCustom(e.target.value)}
             />
+            <button
+              onClick={escucharPregunta}
+              disabled={cargando || escuchando}
+              className="px-6 py-2 border border-white/30 rounded-full text-sm disabled:opacity-30 hover:border-white transition-all"
+            >
+              {escuchando ? 'escuchando...' : 'hablar'}
+            </button>
             <button onClick={() => preguntar(preguntaCustom)} disabled={cargando || !preguntaCustom.trim()}
               className="px-6 py-2 border border-white/50 rounded-full text-sm disabled:opacity-30 hover:border-white transition-all">
               {cargando ? 'el dios piensa...' : 'preguntar'}
