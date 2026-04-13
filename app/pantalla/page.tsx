@@ -441,11 +441,9 @@ export default function Pantalla() {
 
     // ecualizador cuando habla
     if (hablandoRef.current) {
-      const bars = 128
-      const totalWidth = W
-      const barW = totalWidth / bars
-      const totalBarsWidth = bars * barW
-      const offsetX = (W - totalBarsWidth) / 2
+      const bars = 64
+      const barW = (W * 0.6) / bars
+      const centerX = W / 2
       const centerY = H / 2
       const analyser = analyserRef.current
       const data = dataArrayRef.current
@@ -456,18 +454,29 @@ export default function Pantalla() {
           const idx = Math.floor(i * data.length / bars)
           const value = data[idx] ?? 0
           const barH = (value / 255) * (H * 0.5) + 5
-          const x = offsetX + i * barW
+          const distance = (i + 1) * barW
           const alpha = 0.4 + (value / 255) * 0.6
           const hue = 280 + (i / bars) * 100
           const saturation = 80 + (value / 255) * 20
 
+          // Barra derecha
           ctx.fillStyle = `hsla(${hue}, ${saturation}%, 65%, ${alpha})`
-          ctx.fillRect(x, centerY - barH / 2, barW - 0.5, barH)
+          ctx.fillRect(centerX + distance, centerY - barH / 2, barW - 0.5, barH)
           
           ctx.shadowColor = `hsla(${hue}, 100%, 65%, 0.8)`
           ctx.shadowBlur = 12
           ctx.fillStyle = `hsla(${hue}, 100%, 80%, ${alpha * 0.6})`
-          ctx.fillRect(x, centerY - barH / 2, barW - 0.5, barH * 0.3)
+          ctx.fillRect(centerX + distance, centerY - barH / 2, barW - 0.5, barH * 0.3)
+          ctx.shadowBlur = 0
+
+          // Barra izquierda (simétrica)
+          ctx.fillStyle = `hsla(${hue}, ${saturation}%, 65%, ${alpha})`
+          ctx.fillRect(centerX - distance - (barW - 0.5), centerY - barH / 2, barW - 0.5, barH)
+          
+          ctx.shadowColor = `hsla(${hue}, 100%, 65%, 0.8)`
+          ctx.shadowBlur = 12
+          ctx.fillStyle = `hsla(${hue}, 100%, 80%, ${alpha * 0.6})`
+          ctx.fillRect(centerX - distance - (barW - 0.5), centerY - barH / 2, barW - 0.5, barH * 0.3)
           ctx.shadowBlur = 0
         }
       } else {
@@ -478,12 +487,17 @@ export default function Pantalla() {
             + (Math.random() - 0.5) * 0.3
 
           const barH = Math.abs(freq) * 200 + 5
-          const x = offsetX + i * barW
+          const distance = (i + 1) * barW
           const alpha = 0.6 + Math.abs(freq) * 0.4
           const hue = 280 + (i / bars) * 100
 
+          // Barra derecha
           ctx.fillStyle = `hsla(${hue}, 80%, 65%, ${alpha})`
-          ctx.fillRect(x, centerY - barH / 2, barW - 0.5, barH)
+          ctx.fillRect(centerX + distance, centerY - barH / 2, barW - 0.5, barH)
+
+          // Barra izquierda (simétrica)
+          ctx.fillStyle = `hsla(${hue}, 80%, 65%, ${alpha})`
+          ctx.fillRect(centerX - distance - (barW - 0.5), centerY - barH / 2, barW - 0.5, barH)
         }
       }
 
