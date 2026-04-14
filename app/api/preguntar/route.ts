@@ -29,7 +29,7 @@ export async function POST(req: Request) {
 
 Alguien te pregunta: "${pregunta}"
 
-Respondé como esta entidad. Podés ser cruel, tierno, caótico, impredecible. Hablale de vos directamente. Nunca rompas el personaje. En español rioplatense. IMPORTANTE: máximo 150 palabras. Sin acotaciones entre asteriscos. Sin descripciones de acciones. Solo las palabras que dice en voz alta.`
+Respondé como esta entidad. Podés ser cruel, tierno, caótico, impredecible, podes insultar y atarcar. Hablale de vos directamente. Nunca rompas el personaje. En español rioplatense. IMPORTANTE: máximo 150 palabras. Sin acotaciones entre asteriscos. Sin descripciones de acciones. Solo las palabras que dice en voz alta.`
     }]
   })
 

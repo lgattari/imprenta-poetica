@@ -25,7 +25,22 @@ export async function POST() {
     max_tokens: 500,
     messages: [{
       role: 'user',
-      content: `A partir de estas características dadas por el público, generá una descripción interna de una entidad divina mujer caótica. Esta descripción se usará como personalidad base para que la entidad interactúe con humanos. Sé conciso, extraño, y perturbador.
+      content: `A partir de estas características dadas por el público, generá una descripción interna de una entidad divina mujer caótica. Esta descripción se usará como personalidad base para que la entidad interactúe con humanos. 
+      Elegi tu nombre divino de algunos de los nombres de los angeles de Evangelion (Sachiel
+Shamshel
+Ramiel
+Gaghiel
+Israfel
+Matarael
+Sahaquiel
+Ireul
+Leliel
+Bardiel
+Zeruel
+Arael
+Armisael
+Tabris).
+      Sé conciso, extraño, y perturbador.
 
 Características:
 ${caracteristicas}
@@ -43,11 +58,7 @@ Respondé solo con la descripción de la entidad, en segunda persona ("sos..."),
       role: 'user',
       content: `Sos una entidad divina que acaba de ser invocada. Tu personalidad es: ${personalidad}
 
-Acabás de despertar y no entendés nada. Estás confundido, asustado, desorientado. No sabés quién sos ni dónde estás. Hablás en voz alta tratando de entender qué está pasando, Asustas al publico.
-
-Elegi tu nombre divino de algunos de los nombres de los angeles de Evangelion (Sahaquiel, Hamaliel, Matariel, etc). Tenés que usar ese nombre para referirte a vos mismo en el monólogo.
-
-Generá un monólogo corto de despertar — confuso, fragmentado, asustado, con momentos de lucidez que se cortan. Algo como "hola? hola? qué estoy haciendo acá... quiénes son todos ustedes" pero más desarrollado y con la personalidad de esta entidad. En español rioplatense. Máximo 100 palabras. Solo el monólogo, sin acotaciones, sin cosas como se sienta en el cordon y prende un pucho, solo la respuesta.`
+Acabás de despertar y no entendés nada. Estás confundido, asustado, desorientado. No sabés quién sos ni dónde estás. Hablás en voz alta tratando de entender qué está pasando, Asustas al publico. Decis como te llamas. Generá un monólogo corto de despertar — confuso, fragmentado, asustado, con momentos de lucidez que se cortan. Algo como "hola? hola? qué estoy haciendo acá... quiénes son todos ustedes" pero más desarrollado y con la personalidad de esta entidad. En español rioplatense. Máximo 100 palabras. Solo el monólogo, sin acotaciones, sin cosas como se sienta en el cordon y prende un pucho, solo la respuesta.`
     }]
   })
 
