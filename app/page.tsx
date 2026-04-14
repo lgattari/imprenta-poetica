@@ -25,7 +25,6 @@ export default function Home() {
 
   if (enviado) return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-8 relative overflow-hidden">
-      {/* Fondo con gradiente */}
       <div style={{
         position: 'absolute',
         top: 0,
@@ -35,53 +34,29 @@ export default function Home() {
         background: 'radial-gradient(circle at 50% 50%, rgba(200,150,255,0.08) 0%, rgba(0,0,0,1) 70%)',
         pointerEvents: 'none',
       }} />
-
       <div style={{
         position: 'relative',
         zIndex: 10,
         textAlign: 'center',
         animation: 'fadein 0.8s ease-out',
       }}>
-        <div style={{
-          fontSize: '3rem',
-          marginBottom: '2rem',
-          color: 'rgba(200,150,255,0.8)',
-          fontWeight: 300,
-        }}>
-          ✦
-        </div>
         <p style={{
           fontSize: '2rem',
           fontWeight: 300,
           color: 'rgba(200,150,255,0.95)',
-          marginBottom: '1rem',
-          letterSpacing: '0.05em',
+          margin: 0,
+          letterSpacing: '0.02em',
         }}>
           tu ofrenda fue recibida
         </p>
-        <div style={{
-          height: '1px',
-          width: '100px',
-          background: 'linear-gradient(90deg, transparent, rgba(200,150,255,0.8), transparent)',
-          margin: '2rem auto',
-        }} />
-        <p style={{
-          color: 'rgba(200,150,255,0.5)',
-          fontSize: '0.9rem',
-          fontStyle: 'italic',
-          letterSpacing: '0.05em',
-        }}>
-          el dios contempla tu creación
-        </p>
       </div>
-
       <style>{estilos}</style>
     </main>
   )
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-8 relative overflow-hidden">
-      {/* Fondo con gradiente radial */}
+      {/* Fondo con gradiente */}
       <div style={{
         position: 'absolute',
         top: 0,
@@ -99,39 +74,32 @@ export default function Home() {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '2rem',
+        gap: '2.5rem',
         maxWidth: '600px',
+        width: '100%',
         animation: 'fadein 1s ease-out',
       }}>
-        {/* Título principal */}
+        {/* Título */}
         <div style={{
           textAlign: 'center',
-          marginBottom: '1rem',
         }}>
-          <div style={{
-            fontSize: '2.5rem',
-            marginBottom: '1rem',
-            color: 'rgba(200,150,255,0.8)',
-          }}>
-            ✦
-          </div>
           <h1 style={{
-            fontSize: 'clamp(2.5rem, 6vw, 4rem)',
+            fontSize: 'clamp(2rem, 6vw, 3.5rem)',
             fontWeight: 300,
-            textAlign: 'center',
-            lineHeight: 1.3,
+            margin: 0,
             color: 'rgba(200,150,255,0.95)',
             letterSpacing: '0.02em',
+            lineHeight: 1.3,
           }}>
             Tu dios
           </h1>
         </div>
 
-        {/* Descripción */}
+        {/* Subtítulo */}
         <p style={{
-          textAlign: 'center',
-          fontSize: '1.1rem',
+          fontSize: '1rem',
           color: 'rgba(200,150,255,0.6)',
+          margin: 0,
           fontWeight: 300,
           letterSpacing: '0.05em',
         }}>
@@ -140,14 +108,23 @@ export default function Home() {
 
         {/* Input */}
         <textarea
-          className="w-full rounded-lg p-4 text-white placeholder-white/30 resize-none focus:outline-none transition-all"
           style={{
+            width: '100%',
             backgroundColor: 'rgba(200,150,255,0.05)',
             border: '1px solid rgba(200,150,255,0.3)',
+            borderRadius: '8px',
+            padding: '1rem',
+            color: 'white',
             fontSize: '1rem',
             fontFamily: 'inherit',
             lineHeight: '1.5',
+            resize: 'none',
+            transition: 'all 0.3s ease',
           }}
+          rows={4}
+          placeholder="Tu dios es..."
+          value={texto}
+          onChange={e => setTexto(e.target.value)}
           onFocus={(e: React.FocusEvent<HTMLTextAreaElement>) => {
             const target = e.target as HTMLTextAreaElement
             target.style.backgroundColor = 'rgba(200,150,255,0.1)'
@@ -158,10 +135,6 @@ export default function Home() {
             target.style.backgroundColor = 'rgba(200,150,255,0.05)'
             target.style.borderColor = 'rgba(200,150,255,0.3)'
           }}
-          rows={4}
-          placeholder="Tu dios es..."
-          value={texto}
-          onChange={e => setTexto(e.target.value)}
         />
 
         {/* Botón */}
