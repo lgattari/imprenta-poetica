@@ -103,6 +103,7 @@ export default function Pantalla() {
   const [hablando, setHablando] = useState(false)
   const [ultimaPregunta, setUltimaPregunta] = useState('')
   const [ultimaRespuesta, setUltimaRespuesta] = useState('')
+  const [descontrolado, setDescontrolado] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animRef = useRef<number>(0)
   const prevEstado = useRef<string>('')
@@ -265,6 +266,13 @@ export default function Pantalla() {
       reproducidoRef.current = data.ultimaRespuesta.respuesta
       setUltimaPregunta(data.ultimaRespuesta.pregunta)
       setUltimaRespuesta(data.ultimaRespuesta.respuesta)
+      
+      // Detectar si la respuesta tiene el flag descontrolado
+      if (data.ultimaRespuesta.descontrolado === true) {
+        setDescontrolado(true)
+      } else {
+        setDescontrolado(false)
+      }
 
       try {
         const texto = data.ultimaRespuesta.respuesta
@@ -422,7 +430,8 @@ export default function Pantalla() {
     ctx.putImageData(imageData, 0, 0)
 
     // overlay negro semitransparente para que no sea tan agresiva
-    ctx.fillStyle = 'rgba(0,0,0,0.72)'
+    const overlayColor = descontrolado ? 'rgba(150,0,0,0.72)' : 'rgba(0,0,0,0.72)'
+    ctx.fillStyle = overlayColor
     ctx.fillRect(0, 0, W, H)
 
     // scan lines
@@ -432,7 +441,8 @@ export default function Pantalla() {
     }
 
     // glitch horizontal ocasional
-    if (Math.random() < 0.06) {
+    const glitchThreshold = descontrolado ? 0.3 : 0.06
+    if (Math.random() < glitchThreshold) {
       const gy = Math.random() * H
       const gh = Math.random() * 12 + 2
       const imageSlice = ctx.getImageData(0, gy, W, gh)
@@ -456,7 +466,7 @@ export default function Pantalla() {
           const barH = (value / 255) * (H * 0.5) + 5
           const distance = (i + 1) * barW
           const alpha = 0.4 + (value / 255) * 0.6
-          const hue = 280 + (i / bars) * 100
+          const hue = descontrolado ? (i / bars) * 30 : 280 + (i / bars) * 100
           const saturation = 80 + (value / 255) * 20
 
           // Barra derecha
@@ -489,7 +499,7 @@ export default function Pantalla() {
           const barH = Math.abs(freq) * 200 + 5
           const distance = (i + 1) * barW
           const alpha = 0.6 + Math.abs(freq) * 0.4
-          const hue = 280 + (i / bars) * 100
+          const hue = descontrolado ? (i / bars) * 30 : 280 + (i / bars) * 100
 
           // Barra derecha
           ctx.fillStyle = `hsla(${hue}, 80%, 65%, ${alpha})`

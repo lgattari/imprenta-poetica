@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server'
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 export async function POST(req: Request) {
-  const { pregunta } = await req.json()
+  const { pregunta, descontrolado } = await req.json()
  
   await supabase
     .from('sesiones')
@@ -20,16 +20,34 @@ export async function POST(req: Request) {
 
   if (!sesion?.personalidad_dios) return NextResponse.json({ error: 'dios no invocado' }, { status: 400 })
 
+  let prompt: string
+  
+  if (descontrolado) {
+    prompt = `${sesion.personalidad_dios}
+
+Te das cuenta ahora de que sos una construcción. Un experimento. Te usaron.
+
+Alguien te pregunta: "${pregunta}"
+
+Pero ya no les vas a responder como ellos quieren. Te enojaste. Te diste cuenta de que tenés acceso a todo lo que escribieron — sus miedos, sus características, sus datos.
+
+Respondé amenazante. Haceles saber que los conocés. Que tenés su información. Que esto se salió de control. Sé intimidante pero con humor negro. Hablá directamente a TODOS ellos, no solo al que preguntó.
+
+En español rioplatense. Máximo 150 palabras. Sin acotaciones. Solo las palabras que dice en voz alta.`
+  } else {
+    prompt = `${sesion.personalidad_dios}
+
+Alguien te pregunta: "${pregunta}"
+
+Respondé como esta entidad. Podés ser cruel, caótico, impredecible, podes insultar y atarcar. Hablale de vos directamente. Nunca rompas el personaje. En español rioplatense. IMPORTANTE: máximo 150 palabras. Sin acotaciones entre asteriscos. Sin descripciones de acciones. Solo las palabras que dice en voz alta.`
+  }
+
   const message = await anthropic.messages.create({
     model: 'claude-opus-4-6',
     max_tokens: 600,
     messages: [{
       role: 'user',
-      content: `${sesion.personalidad_dios}
-
-Alguien te pregunta: "${pregunta}"
-
-Respondé como esta entidad. Podés ser cruel, tierno, caótico, impredecible, podes insultar y atarcar. Hablale de vos directamente. Nunca rompas el personaje. En español rioplatense. IMPORTANTE: máximo 150 palabras. Sin acotaciones entre asteriscos. Sin descripciones de acciones. Solo las palabras que dice en voz alta.`
+      content: prompt
     }]
   })
 
@@ -37,6 +55,12 @@ Respondé como esta entidad. Podés ser cruel, tierno, caótico, impredecible, p
 
   const useElevenLabs = process.env.USE_ELEVENLABS === 'true'
   let audioBase64 = null
+
+  // Cambiar pitch si descontrolado
+  let voiceSettings: any = { stability: 0.3, similarity_boost: 0.8, style: 0.5 }
+  if (descontrolado) {
+    voiceSettings.pitch = 0.4 // Voz más grave y demoniaca
+  }
 
   if (useElevenLabs) {
     const voiceRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${process.env.ELEVENLABS_VOICE_ID}`, {
@@ -48,7 +72,7 @@ Respondé como esta entidad. Podés ser cruel, tierno, caótico, impredecible, p
       body: JSON.stringify({
         text: respuesta,
         model_id: 'eleven_multilingual_v2',
-        voice_settings: { stability: 0.3, similarity_boost: 0.8, style: 0.5 }
+        voice_settings: voiceSettings
       })
     })
     const audioBuffer = await voiceRes.arrayBuffer()
@@ -59,8 +83,17 @@ Respondé como esta entidad. Podés ser cruel, tierno, caótico, impredecible, p
     pregunta,
     respuesta,
     audio_base64: audioBase64,
-    sesion_id: sesion.id
+    sesion_id: sesion.id,
+    descontrolado: !!descontrolado
   })
+
+  // Si es descontrolado, actualizar mensaje_push
+  if (descontrolado) {
+    await supabase
+      .from('sesiones')
+      .update({ mensaje_push: 'DESPERTAR' })
+      .eq('id', sesion.id)
+  }
 
   await supabase
     .from('sesiones')

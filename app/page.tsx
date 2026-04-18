@@ -1,18 +1,75 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 
 export default function Home() {
   const [texto, setTexto] = useState('')
   const [enviado, setEnviado] = useState(false)
   const [cargando, setCargando] = useState(false)
+  const [userId, setUserId] = useState<string>('')
+  const [mensajePush, setMensajePush] = useState<string>('')
+  const [userCharacteristica, setUserCharacteristica] = useState<string>('')
+  const [mostrarMensaje, setMostrarMensaje] = useState(false)
+
+  // Generar o recuperar userId
+  useEffect(() => {
+    let id = localStorage.getItem('userId')
+    if (!id) {
+      id = crypto.randomUUID()
+      localStorage.setItem('userId', id)
+    }
+    setUserId(id)
+  }, [])
+
+  // Polling para chequear mensaje_push
+  useEffect(() => {
+    if (!userId || cargando || !enviado) return
+
+    const checkMensaje = async () => {
+      const { data: sesion } = await supabase
+        .from('sesiones')
+        .select('mensaje_push')
+        .eq('activa', true)
+        .single()
+
+      if (sesion?.mensaje_push && sesion.mensaje_push !== mensajePush) {
+        setMensajePush(sesion.mensaje_push)
+
+        // Obtener la característica del usuario
+        const { data: respuesta } = await supabase
+          .from('respuestas')
+          .select('contenido')
+          .eq('user_id', userId)
+          .single()
+
+        if (respuesta?.contenido) {
+          setUserCharacteristica(respuesta.contenido)
+          
+          // Reproducir sonido
+          try {
+            const audio = new Audio('/notif.mp3')
+            await audio.play()
+          } catch (e) {
+            console.error('Error reproduciendo audio:', e)
+          }
+
+          // Mostrar overlay
+          setMostrarMensaje(true)
+        }
+      }
+    }
+
+    const interval = setInterval(checkMensaje, 3000)
+    return () => clearInterval(interval)
+  }, [userId, enviado, mensajePush])
 
   async function enviar() {
-    if (!texto.trim()) return
+    if (!texto.trim() || !userId) return
     setCargando(true)
     await fetch('/api/respuesta', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contenido: texto }),
+      body: JSON.stringify({ contenido: texto, userId }),
     })
     setEnviado(true)
     setCargando(false)
@@ -21,7 +78,68 @@ export default function Home() {
   const estilos = `
     @keyframes fadein { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     @keyframes glow { 0%{box-shadow:0 0 20px rgba(200,150,255,0.3)} 50%{box-shadow:0 0 40px rgba(200,150,255,0.6)} 100%{box-shadow:0 0 20px rgba(200,150,255,0.3)} }
+    @keyframes pulse-in { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
   `
+
+  // Overlay con mensaje push
+  if (mostrarMensaje && userCharacteristica) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-8 relative overflow-hidden" style={{
+        animation: 'pulse-in 0.3s ease-out'
+      }}>
+        <div onClick={() => setMostrarMensaje(false)} style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0,0,0,0.9)',
+          zIndex: 100,
+          cursor: 'pointer',
+        }} />
+        
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 101,
+          padding: '2rem',
+          pointerEvents: 'none',
+        }}>
+          <div style={{
+            textAlign: 'center',
+            maxWidth: '90vw',
+            pointerEvents: 'auto',
+            animation: 'pulse-in 0.5s ease-out',
+          }}>
+            <p style={{
+              fontSize: 'clamp(1.5rem, 5vw, 3rem)',
+              fontWeight: 300,
+              color: 'rgba(200,150,255,0.95)',
+              margin: 0,
+              marginBottom: '2rem',
+              letterSpacing: '0.03em',
+              lineHeight: 1.4,
+            }}>
+              "{userCharacteristica}".
+            </p>
+            <p style={{
+              fontSize: 'clamp(1rem, 3vw, 2rem)',
+              fontWeight: 300,
+              color: 'rgba(200,150,255,0.7)',
+              margin: 0,
+              fontStyle: 'italic',
+              letterSpacing: '0.02em',
+            }}>
+              Yo sé quién sos. - El Dios
+            </p>
+          </div>
+        </div>
+
+        <style>{estilos}</style>
+      </main>
+    )
+  }
 
   if (enviado) return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-8 relative overflow-hidden">

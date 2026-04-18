@@ -36,6 +36,8 @@ export default function Admin() {
   const [cargando, setCargando] = useState(false)
   const [respuesta, setRespuesta] = useState('')
   const [escuchando, setEscuchando] = useState(false)
+  const [descontrolado, setDescontrolado] = useState(false)
+  const [enviandoMensaje, setEnviandoMensaje] = useState(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
 
   function iniciarGrabacion() {
@@ -120,12 +122,22 @@ export default function Admin() {
     const res = await fetch('/api/preguntar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pregunta: texto }),
+      body: JSON.stringify({ pregunta: texto, descontrolado }),
     })
     const data = await res.json()
     setRespuesta(data.respuesta)
     setPreguntaCustom('')
     setCargando(false)
+  }
+
+  async function enviarMensajeFinal() {
+    if (!descontrolado) return
+    setEnviandoMensaje(true)
+    await fetch('/api/enviar-mensaje-final', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    })
+    setEnviandoMensaje(false)
   }
 
   async function nuevaSesion() {
@@ -341,6 +353,39 @@ export default function Admin() {
                 }}
               />
 
+              {/* Checkbox: La entidad se descontrola */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.75rem 1rem',
+                borderRadius: '8px',
+                backgroundColor: 'rgba(255,100,100,0.05)',
+                border: '1px solid rgba(255,100,100,0.3)',
+              }}>
+                <input
+                  type="checkbox"
+                  id="descontrolado"
+                  checked={descontrolado}
+                  onChange={(e) => setDescontrolado(e.target.checked)}
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    cursor: 'pointer',
+                    accentColor: 'rgba(255,100,100,0.8)',
+                  }}
+                />
+                <label htmlFor="descontrolado" style={{
+                  flex: 1,
+                  color: 'rgba(255,100,100,0.8)',
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  margin: 0,
+                }}>
+                  La entidad se descontrola
+                </label>
+              </div>
+
               <div style={{
                 display: 'flex',
                 gap: '0.75rem',
@@ -436,6 +481,43 @@ export default function Admin() {
                     {respuesta}
                   </p>
                 </div>
+              )}
+
+              {descontrolado && (
+                <button
+                  onClick={enviarMensajeFinal}
+                  disabled={enviandoMensaje}
+                  style={{
+                    width: '100%',
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    border: `1px solid rgba(255,100,100,${enviandoMensaje ? 0.3 : 0.8})`,
+                    backgroundColor: `rgba(255,100,100,${enviandoMensaje ? 0.02 : 0.1})`,
+                    color: `rgba(255,100,100,${enviandoMensaje ? 0.5 : 1})`,
+                    fontSize: '0.95rem',
+                    fontWeight: 300,
+                    letterSpacing: '0.05em',
+                    cursor: enviandoMensaje ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.3s ease',
+                    opacity: enviandoMensaje ? 0.6 : 1,
+                  }}
+                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    if (!enviandoMensaje) {
+                      const target = e.target as HTMLButtonElement
+                      target.style.borderColor = 'rgba(255,100,100,1)'
+                      target.style.backgroundColor = 'rgba(255,100,100,0.2)'
+                    }
+                  }}
+                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    if (!enviandoMensaje) {
+                      const target = e.target as HTMLButtonElement
+                      target.style.borderColor = 'rgba(255,100,100,0.8)'
+                      target.style.backgroundColor = 'rgba(255,100,100,0.1)'
+                    }
+                  }}
+                >
+                  {enviandoMensaje ? 'enviando...' : 'enviar mensaje final'}
+                </button>
               )}
             </div>
           )}
