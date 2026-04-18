@@ -133,11 +133,25 @@ export default function Admin() {
   async function enviarMensajeFinal() {
     if (!descontrolado) return
     setEnviandoMensaje(true)
-    await fetch('/api/enviar-mensaje-final', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    })
-    setEnviandoMensaje(false)
+    try {
+      const res = await fetch('/api/enviar-mensaje-final', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      const data = await res.json()
+      if (res.ok) {
+        console.log('Mensaje final enviado:', data)
+        alert('✦ El apocalipsis ha sido invocado ✦')
+      } else {
+        console.error('Error:', data)
+        alert('Error: ' + (data.error || 'No se pudo enviar el mensaje'))
+      }
+    } catch (error) {
+      console.error('Error enviando mensaje final:', error)
+      alert('Error de conexión al enviar el mensaje')
+    } finally {
+      setEnviandoMensaje(false)
+    }
   }
 
   async function nuevaSesion() {
