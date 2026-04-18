@@ -26,39 +26,56 @@ export default function Home() {
     if (!userId || cargando || !enviado) return
 
     const checkMensaje = async () => {
-      const { data: sesion } = await supabase
-        .from('sesiones')
-        .select('mensaje_push')
-        .eq('activa', true)
-        .single()
-
-      if (sesion?.mensaje_push && sesion.mensaje_push !== mensajePush) {
-        setMensajePush(sesion.mensaje_push)
-
-        // Obtener el mensaje personalizado del usuario
-        const { data: respuesta } = await supabase
-          .from('respuestas')
-          .select('mensaje_personalizado')
-          .eq('user_id', userId)
+      try {
+        const { data: sesion, error: sesionError } = await supabase
+          .from('sesiones')
+          .select('mensaje_push')
+          .eq('activa', true)
           .single()
 
-        if (respuesta?.mensaje_personalizado) {
-          setMensajePersonalizado(respuesta.mensaje_personalizado)
-          
-          // Reproducir sonido de notificación
-          try {
-            const audio = new Audio('/notif.mp3')
-            await audio.play()
-          } catch (e) {
-            console.error('Error reproduciendo audio:', e)
-          }
-          
-          // Mostrar overlay
-          setMostrarMensaje(true)
+        if (sesionError) {
+          console.error('Error fetching sesion:', sesionError)
+          return
         }
+
+        if (sesion?.mensaje_push && sesion.mensaje_push !== mensajePush) {
+          setMensajePush(sesion.mensaje_push)
+
+          // Obtener el mensaje personalizado del usuario
+          const { data: respuesta, error: respuestaError } = await supabase
+            .from('respuestas')
+            .select('mensaje_personalizado')
+            .eq('user_id', userId)
+            .order('id', { ascending: false })
+            .limit(1)
+            .maybeSingle()
+
+          if (respuestaError) {
+            console.error('Error fetching respuesta:', respuestaError)
+            return
+          }
+
+          if (respuesta?.mensaje_personalizado) {
+            setMensajePersonalizado(respuesta.mensaje_personalizado)
+            
+            // Reproducir sonido de notificación
+            try {
+              const audio = new Audio('/notif.mp3')
+              await audio.play()
+            } catch (e) {
+              console.error('Error reproduciendo audio:', e)
+            }
+            
+            // Mostrar overlay
+            setMostrarMensaje(true)
+          } else {
+            console.log('No mensaje personalizado encontrado para user_id:', userId)
+          }
+        }
+      } catch (e) {
+        console.error('Error en checkMensaje:', e)
       }
     }
-
     const interval = setInterval(checkMensaje, 3000)
     return () => clearInterval(interval)
   }, [userId, enviado, mensajePush])
