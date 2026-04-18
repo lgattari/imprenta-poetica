@@ -8,7 +8,7 @@ export default function Home() {
   const [cargando, setCargando] = useState(false)
   const [userId, setUserId] = useState<string>('')
   const [mensajePush, setMensajePush] = useState<string>('')
-  const [userCharacteristica, setUserCharacteristica] = useState<string>('')
+  const [mensajePersonalizado, setMensajePersonalizado] = useState<string>('')
   const [mostrarMensaje, setMostrarMensaje] = useState(false)
 
   // Generar o recuperar userId
@@ -35,24 +35,24 @@ export default function Home() {
       if (sesion?.mensaje_push && sesion.mensaje_push !== mensajePush) {
         setMensajePush(sesion.mensaje_push)
 
-        // Obtener la característica del usuario
+        // Obtener el mensaje personalizado del usuario
         const { data: respuesta } = await supabase
           .from('respuestas')
-          .select('contenido')
+          .select('mensaje_personalizado')
           .eq('user_id', userId)
           .single()
 
-        if (respuesta?.contenido) {
-          setUserCharacteristica(respuesta.contenido)
+        if (respuesta?.mensaje_personalizado) {
+          setMensajePersonalizado(respuesta.mensaje_personalizado)
           
-          // Reproducir sonido
+          // Reproducir sonido de notificación
           try {
             const audio = new Audio('/notif.mp3')
             await audio.play()
           } catch (e) {
             console.error('Error reproduciendo audio:', e)
           }
-
+          
           // Mostrar overlay
           setMostrarMensaje(true)
         }
@@ -82,7 +82,7 @@ export default function Home() {
   `
 
   // Overlay con mensaje push
-  if (mostrarMensaje && userCharacteristica) {
+  if (mostrarMensaje && mensajePersonalizado) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-8 relative overflow-hidden" style={{
         animation: 'pulse-in 0.3s ease-out'
@@ -113,25 +113,14 @@ export default function Home() {
             animation: 'pulse-in 0.5s ease-out',
           }}>
             <p style={{
-              fontSize: 'clamp(1.5rem, 5vw, 3rem)',
+              fontSize: 'clamp(1.2rem, 4vw, 2.5rem)',
               fontWeight: 300,
               color: 'rgba(200,150,255,0.95)',
               margin: 0,
-              marginBottom: '2rem',
               letterSpacing: '0.03em',
-              lineHeight: 1.4,
+              lineHeight: 1.6,
             }}>
-              "{userCharacteristica}".
-            </p>
-            <p style={{
-              fontSize: 'clamp(1rem, 3vw, 2rem)',
-              fontWeight: 300,
-              color: 'rgba(200,150,255,0.7)',
-              margin: 0,
-              fontStyle: 'italic',
-              letterSpacing: '0.02em',
-            }}>
-              Yo sé quién sos. - El Dios
+              {mensajePersonalizado}
             </p>
           </div>
         </div>
