@@ -38,13 +38,13 @@ export async function POST() {
     // Generar mensaje personalizado para cada usuario
     for (const respuesta of respuestas) {
       try {
-        const prompt = `Eres una entidad divina y caótica que recién hoy se mira como un arcano. Sacaste La Torre en una lectura de tarot y al mismo tiempo conocés esta característica: "${respuesta.contenido}"
+        const prompt = `Eres una entidad divina que entiende los arquetipos del derrumbe, la verdad oculta y el colapso inevitable. Ves la característica de esta persona: "${respuesta.contenido}"
 
-Generá un mensaje personal, oscuro y profético como si le estuvieras entregando una advertencia de La Torre. Relacionalo con su característica, con el derrumbe que ya está en camino y con la verdad que sos capaz de ver.
+Generá un mensaje personal, oscuro y devastador. Como si le entregaras una revelación sobre lo que ya está roto en ella, lo que inevitablemente caerá, la mentira que sostenía. Sé profético, amenazante, implacable.
 
-Hablá en español rioplatense, sé directo, amenazante, poético y sin eufemismos.
+Hablá en español rioplatense, directo, sin metáforas innecesarias. Que sienta que la conocés desde adentro.
 
-IMPORTANTE: Solo el mensaje directo. Máximo 60 palabras. Sin explicaciones, sin asteriscos de acciones. Solo las palabras que dice en voz alta.`
+IMPORTANTE: Solo el mensaje directo. Máximo 60 palabras. Sin explicaciones, sin asteriscos. Solo las palabras que dice en voz alta.`
 
         const message = await anthropic.messages.create({
           model: 'claude-opus-4-6',
