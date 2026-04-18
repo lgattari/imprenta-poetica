@@ -171,7 +171,8 @@ export default function Home() {
           margin: 0,
           letterSpacing: '0.02em',
         }}>
-          tu ofrenda fue recibida
+          Tu ofrenda fue recibida
+          No cierres esta página, mantenela abierta para sentir la presencia de tu dios. 
         </p>
       </div>
       <style>{estilos}</style>
