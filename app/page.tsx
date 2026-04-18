@@ -169,10 +169,20 @@ export default function Home() {
           fontWeight: 300,
           color: 'rgba(200,150,255,0.95)',
           margin: 0,
+          marginBottom: '1rem',
           letterSpacing: '0.02em',
         }}>
           Tu ofrenda fue recibida
-          No cierres esta página, mantenela abierta para sentir la presencia de tu dios. 
+        </p>
+        <p style={{
+          fontSize: '1.2rem',
+          fontWeight: 300,
+          color: 'rgba(200,150,255,0.7)',
+          margin: 0,
+          letterSpacing: '0.01em',
+          lineHeight: 1.4,
+        }}>
+          No cierres esta página, mantenela abierta para sentir la presencia de tu dios.
         </p>
       </div>
       <style>{estilos}</style>

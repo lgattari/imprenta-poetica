@@ -358,15 +358,15 @@ export default function Pantalla() {
       setCuenta(prev => {
         if (prev <= 1) {
           clearInterval(interval)
-          const items: Flotante[] = caracteristicas.map((texto) => ({
+          const items: Flotante[] = caracteristicas.map((texto, index) => ({
             texto,
-            x: Math.random() * 80 + 5,
-            y: Math.random() * 80 + 5,
-            rot: (Math.random() - 0.5) * 40,
-            vx: (Math.random() - 0.5) * 0.3,
-            vy: (Math.random() - 0.5) * 0.3,
-            size: Math.random() * 12 + 14,
-            op: Math.random() * 0.5 + 0.5,
+            x: Math.random() * 80 + 10, // Más centrado inicialmente
+            y: Math.random() * 80 + 10,
+            rot: (Math.random() - 0.5) * 20, // Rotación inicial más suave
+            vx: (Math.random() - 0.5) * 0.8, // Velocidad inicial más alta
+            vy: (Math.random() - 0.5) * 0.8,
+            size: Math.random() * 8 + 16, // Tamaño más consistente
+            op: Math.random() * 0.3 + 0.7, // Opacidad más alta
           }))
           setFlotantes(items)
           setModo('disolucion')
@@ -382,7 +382,7 @@ export default function Pantalla() {
 
   useEffect(() => {
     if (modo !== 'disolucion') return
-    const timers = [1000, 3000, 5000, 7000].map((t, i) =>
+    const timers = [1500, 3500, 5500, 7500, 9500].map((t, i) =>
       setTimeout(() => setFase(i + 1), t)
     )
     return () => timers.forEach(clearTimeout)
@@ -391,14 +391,35 @@ export default function Pantalla() {
   useEffect(() => {
     if (flotantes.length === 0) return
     const anim = setInterval(() => {
-      setFlotantes(prev => prev.map(p => ({
-        ...p,
-        x: Math.max(0, Math.min(90, p.x + p.vx)),
-        y: Math.max(0, Math.min(90, p.y + p.vy)),
-        vx: p.x <= 0 || p.x >= 90 ? -p.vx : p.vx,
-        vy: p.y <= 0 || p.y >= 90 ? -p.vy : p.vy,
-      })))
-    }, 50)
+      setFlotantes(prev => prev.map(p => {
+        // Movimiento más orgánico con atracción al centro
+        const centerX = 50
+        const centerY = 50
+        const dx = centerX - p.x
+        const dy = centerY - p.y
+        const distance = Math.sqrt(dx * dx + dy * dy)
+
+        // Atracción gradual al centro
+        const attraction = 0.02
+        const newVx = p.vx + (dx / distance) * attraction
+        const newVy = p.vy + (dy / distance) * attraction
+
+        // Amortiguación para movimiento más suave
+        const damping = 0.98
+        const finalVx = newVx * damping
+        const finalVy = newVy * damping
+
+        return {
+          ...p,
+          x: Math.max(0, Math.min(100, p.x + finalVx)),
+          y: Math.max(0, Math.min(100, p.y + finalVy)),
+          vx: finalVx,
+          vy: finalVy,
+          // Rotación más dinámica
+          rot: p.rot + (Math.sin(Date.now() * 0.001 + p.x) * 0.5),
+        }
+      }))
+    }, 16) // 60fps
     return () => clearInterval(anim)
   }, [flotantes.length])
 
@@ -600,25 +621,84 @@ export default function Pantalla() {
   )
 
   if (modo === 'disolucion') {
-    const bg = `rgba(160,50,0,${Math.min(fase * 0.28, 1)})`
+    const bgIntensity = Math.min(fase * 0.15, 0.8)
+    const bgColor = `rgba(255, ${100 + fase * 20}, 0, ${bgIntensity})`
+
     return (
-      <main className="min-h-screen overflow-hidden transition-all duration-1000" style={{ background: bg, position: 'relative' }}>
-        {flotantes.map((p, i) => (
-          <span key={i} style={{
-            position: 'absolute', left: `${p.x}%`, top: `${p.y}%`,
-            fontSize: `${p.size}px`,
-            transform: `rotate(${p.rot + fase * 5}deg)`,
-            opacity: fase >= 3 ? p.op * (1 - (fase - 3) * 0.5) : p.op,
-            color: fase >= 2 ? '#ffaa44' : 'white',
-            filter: fase >= 2 ? `blur(${(fase - 1) * 2}px)` : 'none',
-            transition: 'color 1s, filter 1.5s, opacity 1.5s',
-            fontWeight: 300, whiteSpace: 'nowrap', maxWidth: '30vw',
-          }}>
-            {p.texto}
-          </span>
+      <main className="min-h-screen overflow-hidden relative" style={{
+        background: `radial-gradient(circle at 50% 50%, ${bgColor} 0%, rgba(20,0,0,${bgIntensity}) 50%, black 100%)`,
+        transition: 'all 2s ease-in-out'
+      }}>
+        {/* Partículas de fondo */}
+        {fase >= 1 && Array.from({ length: 20 }, (_, i) => (
+          <div key={i} style={{
+            position: 'absolute',
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            width: '2px',
+            height: '2px',
+            background: `hsl(${20 + fase * 10}, 100%, 70%)`,
+            borderRadius: '50%',
+            opacity: Math.min(fase * 0.1, 0.6),
+            animation: `float ${2 + Math.random() * 2}s ease-in-out infinite`,
+            animationDelay: `${Math.random() * 2}s`,
+          }} />
         ))}
-        {fase >= 4 && <div style={{ position: 'absolute', inset: 0, background: 'black', animation: 'aparecer 2s ease-in forwards' }} />}
-        <style>{estilos}</style>
+
+        {flotantes.map((p, i) => {
+          const fusionProgress = Math.max(0, fase - 2)
+          const scale = 1 + fusionProgress * 0.5
+          const glowIntensity = fusionProgress * 20
+
+          return (
+            <span key={i} style={{
+              position: 'absolute',
+              left: `${p.x}%`,
+              top: `${p.y}%`,
+              fontSize: `${p.size * scale}px`,
+              transform: `rotate(${p.rot}deg) scale(${scale})`,
+              opacity: fase >= 4 ? Math.max(0, p.op - (fase - 4) * 0.3) : p.op,
+              color: fase >= 2 ? `hsl(${20 + fusionProgress * 20}, ${80 + fusionProgress * 20}%, ${60 + fusionProgress * 20}%)` : 'white',
+              filter: fase >= 2 ? `blur(${fusionProgress * 1.5}px) drop-shadow(0 0 ${glowIntensity}px hsl(${20 + fusionProgress * 20}, 100%, 70%))` : 'none',
+              transition: 'all 1.5s cubic-bezier(0.4, 0, 0.2, 1)',
+              fontWeight: 300,
+              whiteSpace: 'nowrap',
+              maxWidth: '40vw',
+              textShadow: fase >= 2 ? `0 0 ${glowIntensity * 0.5}px hsl(${20 + fusionProgress * 20}, 100%, 70%)` : 'none',
+              animation: fase >= 3 ? `dissolve ${2 + Math.random()}s ease-in-out infinite` : 'none',
+            }}>
+              {p.texto}
+            </span>
+          )
+        })}
+
+        {/* Overlay final con efecto de quemado */}
+        {fase >= 4 && (
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'radial-gradient(circle at 50% 50%, transparent 30%, rgba(0,0,0,0.8) 60%, black 100%)',
+            animation: 'burn 3s ease-in forwards',
+            zIndex: 10,
+          }} />
+        )}
+
+        <style>{`
+          @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
+          }
+          @keyframes dissolve {
+            0%, 100% { transform: scale(1) rotate(0deg); filter: blur(0px); }
+            50% { transform: scale(1.1) rotate(5deg); filter: blur(2px); }
+          }
+          @keyframes burn {
+            0% { opacity: 0; transform: scale(0.8); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+          }
+          ${estilos}
+        `}</style>
       </main>
     )
   }
