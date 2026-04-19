@@ -182,7 +182,7 @@ export default function Home() {
           letterSpacing: '0.01em',
           lineHeight: 1.4,
         }}>
-          No cierres esta página, mantenela abierta para sentir la presencia de tu dios.
+          No cierres esta página, mantenela abierta, necesitamos darle energia a nuestra entidad.
         </p>
       </div>
       <style>{estilos}</style>

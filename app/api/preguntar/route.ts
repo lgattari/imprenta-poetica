@@ -40,7 +40,7 @@ En español rioplatense. Máximo 150 palabras. Sin acotaciones. Sin asteriscos. 
 
 Alguien te pregunta: "${pregunta}"
 
-Respondé como esta entidad. Podés ser cruel, caótico, impredecible, podes insultar y atarcar. Hablale de vos directamente. Nunca rompas el personaje. En español rioplatense. IMPORTANTE: máximo 150 palabras. Sin acotaciones entre asteriscos. Sin asteriscos. Sin descripciones de acciones.  Solo las palabras que dice en voz alta.`
+Respondé como esta entidad. Podés ser cruel, caótico, impredecible, podes insultar y atarcar. Hablale de vos directamente. Nunca rompas el personaje. En español rioplatense. IMPORTANTE: máximo 150 palabras. Sin acotaciones entre asteriscos. No uses asteriscos. Sin descripciones de acciones.  Solo las palabras que dice en voz alta.`
   }
 
   const message = await anthropic.messages.create({
