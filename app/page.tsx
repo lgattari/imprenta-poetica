@@ -104,12 +104,11 @@ export default function Home() {
       <main className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-8 relative overflow-hidden" style={{
         animation: 'pulse-in 0.3s ease-out'
       }}>
-        <div onClick={() => setMostrarMensaje(false)} style={{
+        <div style={{
           position: 'fixed',
           inset: 0,
           backgroundColor: 'rgba(0,0,0,0.9)',
           zIndex: 100,
-          cursor: 'pointer',
         }} />
         
         <div style={{
@@ -134,10 +133,21 @@ export default function Home() {
               fontWeight: 300,
               color: 'rgba(200,150,255,0.95)',
               margin: 0,
+              marginBottom: '1rem',
               letterSpacing: '0.03em',
               lineHeight: 1.6,
             }}>
               {mensajePersonalizado}
+            </p>
+            <p style={{
+              fontSize: 'clamp(0.8rem, 2vw, 1rem)',
+              fontWeight: 300,
+              color: 'rgba(200,150,255,0.6)',
+              margin: 0,
+              fontStyle: 'italic',
+              letterSpacing: '0.02em',
+            }}>
+              Este mensaje permanecerá contigo
             </p>
           </div>
         </div>
