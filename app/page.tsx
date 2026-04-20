@@ -1,9 +1,10 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 
 export default function Home() {
   const [texto, setTexto] = useState('')
+  const audioRef = useRef<HTMLAudioElement | null>(null)
   const [enviado, setEnviado] = useState(false)
   const [cargando, setCargando] = useState(false)
   const [userId, setUserId] = useState<string>('')
@@ -88,8 +89,11 @@ export default function Home() {
             
             // Reproducir sonido de notificación
             try {
-              const audio = new Audio('/notif.mp3')
-              await audio.play()
+              if (!audioRef.current) {
+                audioRef.current = new Audio('/notif.mp3')
+              }
+              audioRef.current.currentTime = 0
+              await audioRef.current.play()
             } catch (e) {
               console.error('Error reproduciendo audio:', e)
             }
@@ -110,6 +114,22 @@ export default function Home() {
 
   async function enviar() {
     if (!texto.trim() || !userId) return
+
+    // Preparar audio en el gesto del usuario para evitar bloqueo de autoplay
+    if (!audioRef.current) {
+      audioRef.current = new Audio('/notif.mp3')
+      audioRef.current.muted = true
+      audioRef.current.play().then(() => {
+        audioRef.current?.pause()
+        if (audioRef.current) {
+          audioRef.current.currentTime = 0
+          audioRef.current.muted = false
+        }
+      }).catch((e) => {
+        console.warn('Audio unlock failed:', e)
+      })
+    }
+
     setCargando(true)
     await fetch('/api/respuesta', {
       method: 'POST',
