@@ -21,6 +21,34 @@ export default function Home() {
     setUserId(id)
   }, [])
 
+  useEffect(() => {
+    if (!userId) return
+
+    const checkPreviousAnswer = async () => {
+      try {
+        const { data: respuesta, error } = await supabase
+          .from('respuestas')
+          .select('id')
+          .eq('user_id', userId)
+          .limit(1)
+          .maybeSingle()
+
+        if (error) {
+          console.error('Error checking previous respuesta:', error)
+          return
+        }
+
+        if (respuesta?.id) {
+          setEnviado(true)
+        }
+      } catch (e) {
+        console.error('Error checking previous respuesta:', e)
+      }
+    }
+
+    checkPreviousAnswer()
+  }, [userId])
+
   // Polling para chequear mensaje_push
   useEffect(() => {
     if (!userId || cargando || !enviado) return
