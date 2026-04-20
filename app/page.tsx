@@ -119,15 +119,14 @@ export default function Home() {
     if (!audioRef.current) {
       audioRef.current = new Audio('/notif.mp3')
       audioRef.current.muted = true
-      audioRef.current.play().then(() => {
-        audioRef.current?.pause()
-        if (audioRef.current) {
-          audioRef.current.currentTime = 0
-          audioRef.current.muted = false
-        }
-      }).catch((e) => {
+      try {
+        await audioRef.current.play()
+        audioRef.current.pause()
+        audioRef.current.currentTime = 0
+        audioRef.current.muted = false
+      } catch (e) {
         console.warn('Audio unlock failed:', e)
-      })
+      }
     }
 
     setCargando(true)
