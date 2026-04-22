@@ -11,6 +11,7 @@ export default function Home() {
   const [mensajePush, setMensajePush] = useState<string>('')
   const [mensajePersonalizado, setMensajePersonalizado] = useState<string>('')
   const [mostrarMensaje, setMostrarMensaje] = useState(false)
+  const [preguntasHabilitadas, setPreguntasHabilitadas] = useState(true)
 
   // Generar o recuperar userId
   useEffect(() => {
@@ -20,6 +21,24 @@ export default function Home() {
       localStorage.setItem('userId', id)
     }
     setUserId(id)
+  }, [])
+
+  // Chequear si las preguntas están habilitadas
+  useEffect(() => {
+    const checkPreguntasHabilitadas = async () => {
+      try {
+        const res = await fetch('/api/estado')
+        const data = await res.json()
+        setPreguntasHabilitadas(data.preguntas_habilitadas ?? true)
+      } catch (e) {
+        console.error('Error checking preguntas habilitadas:', e)
+      }
+    }
+
+    checkPreguntasHabilitadas()
+    // Chequear cada 5 segundos para cambios en tiempo real
+    const interval = setInterval(checkPreguntasHabilitadas, 5000)
+    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
@@ -144,6 +163,57 @@ export default function Home() {
     @keyframes glow { 0%{box-shadow:0 0 20px rgba(200,150,255,0.3)} 50%{box-shadow:0 0 40px rgba(200,150,255,0.6)} 100%{box-shadow:0 0 20px rgba(200,150,255,0.3)} }
     @keyframes pulse-in { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
   `
+
+  // Si las preguntas no están habilitadas, mostrar mensaje
+  if (!preguntasHabilitadas) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-8 relative overflow-hidden">
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'radial-gradient(circle at 50% 50%, rgba(200,150,255,0.08) 0%, rgba(0,0,0,1) 70%)',
+          pointerEvents: 'none',
+        }} />
+        <div style={{
+          position: 'relative',
+          zIndex: 10,
+          textAlign: 'center',
+          animation: 'fadein 0.8s ease-out',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1.5rem',
+          alignItems: 'center',
+        }}>
+          <p style={{
+            fontSize: 'clamp(2rem, 6vw, 3.5rem)',
+            fontWeight: 300,
+            color: 'rgba(200,150,255,0.95)',
+            margin: 0,
+            letterSpacing: '0.02em',
+            lineHeight: 1.3,
+            fontStyle: 'italic',
+          }}>
+            Todavía no...
+          </p>
+          <p style={{
+            fontSize: 'clamp(1.2rem, 4vw, 1.8rem)',
+            fontWeight: 300,
+            color: 'rgba(200,150,255,0.6)',
+            margin: 0,
+            letterSpacing: '0.01em',
+            lineHeight: 1.4,
+            fontStyle: 'italic',
+          }}>
+            a las 11 lo invocaremos
+          </p>
+        </div>
+        <style>{estilos}</style>
+      </main>
+    )
+  }
 
   // Overlay con mensaje push
   if (mostrarMensaje && mensajePersonalizado) {
