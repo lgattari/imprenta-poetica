@@ -4,11 +4,11 @@ import { NextResponse } from 'next/server'
 export async function GET() {
   const { data: sesion } = await supabase
     .from('sesiones')
-    .select('id, estado, monologo_despertar, procesando, mensaje_push')
+    .select('id, estado, monologo_despertar, procesando, mensaje_push, preguntas_habilitadas')
     .eq('activa', true)
     .single()
 
-  if (!sesion) return NextResponse.json({ respuestas: [] })
+  if (!sesion) return NextResponse.json({ respuestas: [], preguntas_habilitadas: false })
 
   const { data: respuestas } = await supabase
     .from('respuestas')
@@ -31,7 +31,8 @@ export async function GET() {
     ultimaRespuesta: ultimaRespuesta ?? null,
     monologo_despertar: sesion.monologo_despertar ?? null,
     procesando: sesion.procesando ?? false,
-    mensaje_push: sesion.mensaje_push ?? null
+    mensaje_push: sesion.mensaje_push ?? null,
+    preguntas_habilitadas: sesion.preguntas_habilitadas ?? false
   })
 }
 
@@ -39,13 +40,15 @@ export async function GET() {
     return NextResponse.json({
       estado: 'disolucion',
       respuestas: respuestas?.map(r => r.contenido) ?? [],
-      mensaje_push: sesion.mensaje_push ?? null
+      mensaje_push: sesion.mensaje_push ?? null,
+      preguntas_habilitadas: sesion.preguntas_habilitadas ?? false
     })
   }
 
   return NextResponse.json({
     estado: 'activa',
     respuestas: respuestas?.map(r => r.contenido) ?? [],
-    mensaje_push: sesion.mensaje_push ?? null
+    mensaje_push: sesion.mensaje_push ?? null,
+    preguntas_habilitadas: sesion.preguntas_habilitadas ?? false
   })
 }

@@ -104,6 +104,7 @@ export default function Pantalla() {
   const [ultimaPregunta, setUltimaPregunta] = useState('')
   const [ultimaRespuesta, setUltimaRespuesta] = useState('')
   const [descontrolado, setDescontrolado] = useState(false)
+  const [preguntasHabilitadas, setPreguntasHabilitadas] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animRef = useRef<number>(0)
   const prevEstado = useRef<string>('')
@@ -185,6 +186,8 @@ export default function Pantalla() {
   async function cargar() {
   const res = await fetch('/api/estado')
   const data = await res.json()
+
+  setPreguntasHabilitadas(data.preguntas_habilitadas ?? false)
 
   if (data.estado === 'dios') {
     setProcesando(data.procesando ?? false)
@@ -561,6 +564,7 @@ export default function Pantalla() {
     @keyframes pulso { 0%{transform:scale(1)} 50%{transform:scale(1.08)} 100%{transform:scale(1)} }
     @keyframes aparecer { from{opacity:0;letter-spacing:0.5em;filter:blur(8px)} to{opacity:1;letter-spacing:normal;filter:blur(0)} }
     @keyframes fadein { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeInMessage { 0%{opacity:0;transform:scale(0.9)} 100%{opacity:1;transform:scale(1)} }
   `
 
   if (!audioActivo) return (
@@ -753,7 +757,39 @@ export default function Pantalla() {
         </div>
 
         {/* Contenido principal */}
-        {caracteristicas.length === 0 ? (
+        {!preguntasHabilitadas ? (
+          <div style={{
+            textAlign: 'center',
+            animation: 'fadeInMessage 1s ease-out',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '1.5rem',
+          }}>
+            <p style={{
+              fontSize: 'clamp(2rem, 8vw, 4rem)',
+              color: 'rgba(200,150,255,0.9)',
+              fontStyle: 'italic',
+              letterSpacing: '0.05em',
+              margin: 0,
+              fontWeight: 300,
+              lineHeight: 1.4,
+            }}>
+              Todavía no...
+            </p>
+            <p style={{
+              fontSize: 'clamp(1.2rem, 4vw, 1.8rem)',
+              color: 'rgba(200,150,255,0.6)',
+              fontStyle: 'italic',
+              letterSpacing: '0.05em',
+              margin: 0,
+              fontWeight: 300,
+              maxWidth: '80vw',
+            }}>
+              a las 11 lo invocaremos
+            </p>
+          </div>
+        ) : caracteristicas.length === 0 ? (
           <div style={{
             textAlign: 'center',
             animation: 'pulse 2s ease-in-out infinite',

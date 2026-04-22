@@ -38,6 +38,7 @@ export default function Admin() {
   const [escuchando, setEscuchando] = useState(false)
   const [descontrolado, setDescontrolado] = useState(false)
   const [enviandoMensaje, setEnviandoMensaje] = useState(false)
+  const [preguntasHabilitadas, setPreguntasHabilitadas] = useState(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
 
   function iniciarGrabacion() {
@@ -97,6 +98,7 @@ export default function Admin() {
     const data = await res.json()
     setEstado(data.estado ?? 'activa')
     setCaracteristicas(data.respuestas?.length ?? 0)
+    setPreguntasHabilitadas(data.preguntas_habilitadas ?? false)
     if (data.preguntas) setPreguntas(data.preguntas)
   }
 
@@ -158,6 +160,20 @@ export default function Admin() {
     await fetch('/api/nueva-sesion', { method: 'POST' })
     setRespuesta('')
     setPreguntas([])
+  }
+
+  async function actualizarPreguntasHabilitadas(enabled: boolean) {
+    setPreguntasHabilitadas(enabled)
+    try {
+      await fetch('/api/preguntas-habilitadas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preguntas_habilitadas: enabled }),
+      })
+    } catch (error) {
+      console.error('Error actualizando preguntas habilitadas:', error)
+      setPreguntasHabilitadas(!enabled)
+    }
   }
 
   const estilos = `
@@ -236,6 +252,41 @@ export default function Admin() {
               }}>
                 {caracteristicas}
               </p>
+            </div>
+            <div>
+              <p style={{
+                fontSize: '0.9rem',
+                color: 'rgba(200,150,255,0.5)',
+                margin: '0 0 0.5rem 0',
+              }}>
+                Preguntas
+              </p>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+              }}>
+                <input
+                  type="checkbox"
+                  id="preguntasHabilitadas"
+                  checked={preguntasHabilitadas}
+                  onChange={(e) => actualizarPreguntasHabilitadas(e.target.checked)}
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    cursor: 'pointer',
+                    accentColor: 'rgba(200,150,255,0.8)',
+                  }}
+                />
+                <label htmlFor="preguntasHabilitadas" style={{
+                  color: 'rgba(200,150,255,0.95)',
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  margin: 0,
+                }}>
+                  Habilitadas
+                </label>
+              </div>
             </div>
           </div>
         </div>
