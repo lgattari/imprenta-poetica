@@ -54,7 +54,7 @@ export default function Admin() {
 
     recognition.onstart = () => setEscuchando(true)
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: any) => {
       let interimTranscript = ''
       
       for (let i = 0; i < event.results.length; i++) {
