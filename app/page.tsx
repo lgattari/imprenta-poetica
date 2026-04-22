@@ -196,7 +196,7 @@ export default function Home() {
             lineHeight: 1.3,
             fontStyle: 'italic',
           }}>
-            Todavía no...
+            Todavía no che...
           </p>
           <p style={{
             fontSize: 'clamp(1.2rem, 4vw, 1.8rem)',
@@ -207,7 +207,7 @@ export default function Home() {
             lineHeight: 1.4,
             fontStyle: 'italic',
           }}>
-            a las 11 lo invocaremos
+            a las 11 y pico lo invocaremos
           </p>
         </div>
         <style>{estilos}</style>
@@ -264,7 +264,7 @@ export default function Home() {
               fontStyle: 'italic',
               letterSpacing: '0.02em',
             }}>
-              Este mensaje permanecerá contigo
+              Con cariño, Dios
             </p>
           </div>
         </div>
@@ -309,7 +309,7 @@ export default function Home() {
           letterSpacing: '0.01em',
           lineHeight: 1.4,
         }}>
-          No cierres esta página, mantenela abierta, necesitamos darle energia a nuestra entidad.
+          No cierres esta página, mantenela abierta, necesitamos darle energia a nuestra entidad. (corte henkidama)
         </p>
       </div>
       <style>{estilos}</style>
@@ -353,7 +353,7 @@ export default function Home() {
             letterSpacing: '0.02em',
             lineHeight: 1.3,
           }}>
-            Tu dios
+            ¿Estás listo para crear tu pequeño Dios portátil? 
           </h1>
         </div>
 
@@ -365,7 +365,8 @@ export default function Home() {
           fontWeight: 300,
           letterSpacing: '0.05em',
         }}>
-          Cómo lo crearías
+          ¿Que darias de vos para tener un Dios en tu bolsillo? 
+          Es hora de hacer un pequeño sacrificio y descubrirlo. Escribí lo que sacrificarias para crear a tu Dios, o como quieras que sea.
         </p>
 
         {/* Input */}

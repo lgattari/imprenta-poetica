@@ -21,10 +21,7 @@ declare global {
     onstart: (() => void) | null
     onend: (() => void) | null
     onerror: (() => void) | null
-    onresult: ((event: SpeechRecognitionEvent) => void) | null
-  }
-  interface SpeechRecognitionEvent extends Event {
-    results: SpeechRecognitionResultList
+    onresult: ((event: any) => void) | null
   }
 }
 
