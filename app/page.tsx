@@ -196,7 +196,7 @@ export default function Home() {
             lineHeight: 1.3,
             fontStyle: 'italic',
           }}>
-            Todavía no che...
+            Todavía no estamos listos para recibir tus ofrendas.
           </p>
           <p style={{
             fontSize: 'clamp(1.2rem, 4vw, 1.8rem)',
@@ -207,7 +207,7 @@ export default function Home() {
             lineHeight: 1.4,
             fontStyle: 'italic',
           }}>
-            a las 11 y pico lo invocaremos
+            a las 11:11...
           </p>
         </div>
         <style>{estilos}</style>
@@ -365,8 +365,8 @@ export default function Home() {
           fontWeight: 300,
           letterSpacing: '0.05em',
         }}>
-          ¿Que darias de vos para tener un Dios en tu bolsillo? 
-          Es hora de hacer un pequeño sacrificio y descubrirlo. Escribí lo que sacrificarias para crear a tu Dios, o como quieras que sea.
+          ¿Harías un pequeño sacrificio para tener un Dios en tu bolsillo? ¿Qué tipo de Dios invocarías? 
+          Para crearlo entre todos, solo tenés que escribir cómo querés que sea nuestro Dios.
         </p>
 
         {/* Input */}
@@ -385,7 +385,7 @@ export default function Home() {
             transition: 'all 0.3s ease',
           }}
           rows={4}
-          placeholder="Tu dios es..."
+          placeholder="Nuestro dios es..."
           value={texto}
           onChange={e => setTexto(e.target.value)}
           onFocus={(e: React.FocusEvent<HTMLTextAreaElement>) => {
