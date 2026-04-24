@@ -309,7 +309,7 @@ export default function Home() {
           letterSpacing: '0.01em',
           lineHeight: 1.4,
         }}>
-          No cierres esta página, mantenela abierta, necesitamos darle energia a nuestra entidad. (corte henkidama)
+          No cierres esta página, mantenela abierta, necesitamos darle energia a nuestra entidad.
         </p>
       </div>
       <style>{estilos}</style>
@@ -353,7 +353,7 @@ export default function Home() {
             letterSpacing: '0.02em',
             lineHeight: 1.3,
           }}>
-            ¿Estás listo para crear tu pequeño Dios portátil? 
+            ¿Harías un pequeño sacrificio para tener un Dios en tu bolsillo? 
           </h1>
         </div>
 
@@ -365,8 +365,8 @@ export default function Home() {
           fontWeight: 300,
           letterSpacing: '0.05em',
         }}>
-          ¿Harías un pequeño sacrificio para tener un Dios en tu bolsillo? ¿Qué tipo de Dios invocarías? 
-          Para crearlo entre todos, solo tenés que escribir cómo querés que sea nuestro Dios.
+          ¿Qué tipo de Dios invocarías? 
+          Para crearlo entre todos, solo tenés que escribir cómo querés que sea nuestro Dios. (Algo bueno o algo malo, da igual)
         </p>
 
         {/* Input */}
