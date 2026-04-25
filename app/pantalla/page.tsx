@@ -382,6 +382,12 @@ export default function Pantalla() {
 
   useEffect(() => {
     if (modo !== 'disolucion') return
+    
+    // Reproducir sonido de disolución
+    const audio = new Audio('/disolucion.mp3')
+    audio.volume = 0.7
+    audio.play().catch(e => console.error('Error audio disolución', e))
+    
     const timers = [1500, 3500, 5500, 7500, 9500].map((t, i) =>
       setTimeout(() => setFase(i + 1), t)
     )
