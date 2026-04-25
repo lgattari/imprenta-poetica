@@ -429,6 +429,19 @@ export default function Pantalla() {
     return () => clearInterval(anim)
   }, [flotantes.length])
 
+  
+  useEffect(() => {
+    if (!procesando) return
+    const audio = new Audio('/procesando.mp3')
+    audio.loop = true
+    audio.volume = 0.3
+    audio.play()
+    return () => {
+      audio.pause()
+      audio.currentTime = 0
+    }
+  }, [procesando])
+
   useEffect(() => {
   if (modo !== 'dios') return
   const canvas = canvasRef.current
@@ -476,6 +489,20 @@ export default function Pantalla() {
       ctx.putImageData(imageSlice, (Math.random() - 0.5) * 60, gy)
     }
 
+    
+    if (procesando) {
+      // estática más intensa
+      if (Math.random() < 0.2) {  // más glitches que lo normal
+        const gy = Math.random() * H
+        const gh = Math.random() * 20 + 5
+        const imageSlice = ctx.getImageData(0, gy, W, gh)
+        ctx.putImageData(imageSlice, (Math.random() - 0.5) * 100, gy)
+      }
+      // pulso sutil
+      const pulse = Math.abs(Math.sin(t * 0.1)) * 0.05
+      ctx.fillStyle = `rgba(255,255,255,${pulse})`
+      ctx.fillRect(0, 0, W, H)
+    }
     // ecualizador cuando habla
     if (hablandoRef.current) {
       const bars = 64
